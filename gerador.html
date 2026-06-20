@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drinks Manir — Gerador de receitas</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#15110d">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drinks Manir">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15110d;--bg-2:#1b1610;--surface:#221b14;--surface-2:#2a2118;
+    --line:#3a2f23;--line-soft:#2f261c;--ink:#f3e9da;--ink-soft:#b6a489;--ink-faint:#8a7860;
+    --gold:#d39a4c;--gold-deep:#b87f33;--shadow:0 18px 40px -22px rgba(0,0,0,.8);
+    --p-citrico:#c6d63e;--p-sour:#ecb53a;--p-cremoso:#e9d6ad;--p-apimentado:#e6602c;
+    --p-amargo:#bf5326;--p-floral:#cf95cf;--p-frutado:#e2557b;--p-tropical:#2eb39f;
+    --p-refrescante:#4fb6d9;--p-doce:#e29ac4;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--ink);
+    background:radial-gradient(1100px 520px at 12% -8%,rgba(211,154,76,.14),transparent 60%),
+      radial-gradient(900px 600px at 108% 4%,rgba(46,179,159,.08),transparent 55%),
+      linear-gradient(180deg,var(--bg),var(--bg-2));
+    background-attachment:fixed;min-height:100vh;-webkit-font-smoothing:antialiased}
+  .shell{max-width:1180px;margin:0 auto;padding:0 24px}
+
+  /* nav */
+  .topnav{display:flex;gap:8px;align-items:center;padding:18px 0 0;font-family:"Space Mono",monospace;font-size:12px}
+  .topnav a{color:var(--ink-faint);text-decoration:none;padding:7px 13px;border-radius:9px;border:1px solid transparent;letter-spacing:.04em}
+  .topnav a:hover{color:var(--ink)}
+  .topnav a.on{color:var(--gold);border-color:var(--line);background:var(--surface)}
+  .topnav .sep{flex:1}
+
+  header{padding:26px 0 20px;border-bottom:1px solid var(--line-soft)}
+  .kicker{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold);margin:0 0 10px}
+  h1{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:clamp(34px,6vw,60px);line-height:.98;margin:0;letter-spacing:-.02em}
+  h1 em{font-style:italic;font-weight:500;color:var(--gold)}
+  .lede{margin:13px 0 0;max-width:62ch;color:var(--ink-soft);font-size:15px;line-height:1.55}
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* console */
+  .console{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:24px 0 4px}
+  .ctrl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 15px 16px}
+  .ctrl .clab{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:10px}
+  select{width:100%;padding:11px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:14.5px;cursor:pointer;appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='none' stroke='%238a7860' stroke-width='2'><path d='M3 5l4 4 4-4'/></svg>");background-repeat:no-repeat;background-position:right 12px center}
+  select:focus{outline:none;border-color:var(--gold-deep)}
+  .pfchips{display:flex;flex-wrap:wrap;gap:6px}
+  .pfchip{font-family:inherit;font-size:12.5px;cursor:pointer;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--bg-2);color:var(--ink-soft);display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+  .pfchip .dot{width:8px;height:8px;border-radius:50%}
+  .pfchip:hover{color:var(--ink);border-color:var(--gold-deep)}
+  .pfchip[aria-pressed="true"]{color:#231a0f;font-weight:600;border-color:transparent}
+
+  .actions{display:flex;flex-wrap:wrap;gap:11px;align-items:center;margin:18px 0 6px}
+  .btn{font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;padding:14px 22px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);transition:all .18s;display:inline-flex;align-items:center;gap:9px}
+  .btn:hover{border-color:var(--gold-deep);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(180deg,var(--gold),var(--gold-deep));border-color:var(--gold-deep);color:#231a0f;font-size:16px;padding:15px 28px}
+  .btn.primary:hover{filter:brightness(1.08)}
+  .btn.ghost{background:transparent;color:var(--ink-soft);font-weight:500}
+  .adv-toggle{margin-left:auto;font-family:"Space Mono",monospace;font-size:11px;color:var(--ink-faint);background:none;border:none;cursor:pointer;letter-spacing:.1em}
+  .adv-toggle:hover{color:var(--ink)}
+  .advanced{display:none;gap:14px;flex-wrap:wrap;margin:6px 0 0;padding:14px;background:var(--bg-2);border:1px dashed var(--line);border-radius:12px}
+  .advanced.show{display:flex}
+  .advanced .mini{flex:1 1 150px}
+  .advanced .clab{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:7px}
+
+  /* results */
+  #out{margin:28px 0 10px;display:grid;gap:20px}
+  #out.triple{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+  .drink{background:linear-gradient(180deg,var(--surface),var(--bg-2));border:1px solid var(--line);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);position:relative;animation:rise .5s ease}
+  @keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+  .drink .band{height:6px;width:100%}
+  .drink .body{padding:22px 24px 20px}
+  .drink .meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+  .drink .tag-base{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+  .drink .tag-met{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.06em;color:var(--ink-faint)}
+  .drink h2{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:clamp(26px,3.4vw,34px);line-height:1.02;margin:2px 0 10px;letter-spacing:-.01em}
+  .drink .vibe{font-size:14px;color:var(--ink-soft);line-height:1.5;font-style:italic;margin:0 0 14px}
+  .drink .perfis{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+  .pf{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px}
+  .pf .pdot{width:6px;height:6px;border-radius:50%}
+  .drink .rh{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);margin:0 0 8px;display:flex;align-items:center;gap:8px}
+  .drink .rh::after{content:"";flex:1;height:1px;background:var(--line-soft)}
+  .drink ul.ing{list-style:none;margin:0 0 16px;padding:0}
+  .drink ul.ing li{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px dashed var(--line-soft);font-size:14.5px}
+  .drink ul.ing li:last-child{border:none}
+  .drink ul.ing .amt{font-family:"Space Mono",monospace;font-size:12.5px;color:var(--gold);white-space:nowrap;flex:none}
+  .drink ul.ing .nm{color:var(--ink)}
+  .drink ul.ing .nm small{display:block;color:var(--ink-faint);font-size:11.5px;font-family:inherit}
+  .drink .steps{font-size:14px;color:var(--ink-soft);line-height:1.6;margin:0 0 16px}
+  .drink .foot{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--ink-faint);padding-top:6px;border-top:1px solid var(--line-soft);margin-bottom:14px}
+  .drink .foot b{color:var(--ink-soft);font-weight:600}
+  .drink .dbtns{display:flex;gap:9px;flex-wrap:wrap}
+  .drink .dbtn{font-family:inherit;font-size:12.5px;cursor:pointer;padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--ink-soft);transition:all .15s;display:inline-flex;align-items:center;gap:6px}
+  .drink .dbtn:hover{color:var(--ink);border-color:var(--gold-deep)}
+  .drink .dbtn.saved{color:var(--gold);border-color:var(--gold-deep)}
+
+  .hint{text-align:center;padding:60px 20px;color:var(--ink-faint)}
+  .hint .big{font-family:"Fraunces",serif;font-size:24px;color:var(--ink-soft);margin-bottom:8px}
+
+  /* favoritos + estoque */
+  section.panel{margin:34px 0;border-top:1px solid var(--line-soft);padding-top:24px}
+  section.panel > h3{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);margin:0 0 4px;cursor:pointer;display:flex;align-items:center;gap:10px;user-select:none}
+  section.panel > h3 .cv{stroke:var(--ink-faint);width:14px;height:14px;transition:transform .2s}
+  section.panel.open > h3 .cv{transform:rotate(180deg)}
+  section.panel .pcount{font-family:inherit;font-size:11px;color:var(--gold);text-transform:none;letter-spacing:0}
+  section.panel .pbody{display:none;padding-top:16px}
+  section.panel.open .pbody{display:block}
+  .favgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+  .favcard{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:13px 15px;font-size:13px}
+  .favcard h4{font-family:"Fraunces",serif;font-weight:600;font-size:17px;margin:0 0 4px}
+  .favcard .fmeta{color:var(--ink-faint);font-size:11.5px;margin-bottom:8px}
+  .favcard .frm{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:12px;padding:0;text-decoration:underline}
+  .favcard .frm:hover{color:var(--p-apimentado)}
+  .invgroups{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+  .invcol h5{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 9px}
+  .invcol label{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-soft);padding:3px 0;cursor:pointer}
+  .invcol input{accent-color:var(--gold-deep);width:15px;height:15px}
+  .inv-note{font-size:12.5px;color:var(--ink-faint);margin:0 0 16px;line-height:1.5}
+
+  footer{padding:26px 0 60px;border-top:1px solid var(--line-soft);color:var(--ink-faint);font-size:12.5px;line-height:1.6;margin-top:30px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--gold);color:#231a0f;font-weight:600;font-size:14px;padding:12px 22px;border-radius:11px;opacity:0;transition:all .25s;pointer-events:none;z-index:99}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  @media(max-width:760px){.console{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <nav class="topnav">
+    <a href="index.html">Carta · 80 drinks</a>
+    <a href="gerador.html" class="on">Gerador</a>
+    <span class="sep"></span>
+    <span style="color:var(--ink-faint)">Drinks Manir</span>
+  </nav>
+
+  <header>
+    <p class="kicker">Bartender de bolso · monta na hora</p>
+    <h1>Criar <em>drink</em></h1>
+    <p class="lede">Fixe o que quiser — <b>base destilada</b>, <b>base de extrato/preparado</b> ou <b>perfil</b> — e o gerador completa uma receita equilibrada com o que você tem em casa. Deixe em <b>"Tanto faz"</b> para liberdade total. Toda receita usa seus produtos GS Sabores + a sua adega.</p>
+  </header>
+
+  <div class="console">
+    <div class="ctrl">
+      <label class="clab" for="selBase">Base destilada</label>
+      <select id="selBase"></select>
+    </div>
+    <div class="ctrl">
+      <label class="clab" for="selFlavor">Base de extrato / preparado</label>
+      <select id="selFlavor"></select>
+    </div>
+    <div class="ctrl">
+      <span class="clab">Perfil do drink</span>
+      <div class="pfchips" id="pfChips"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="gen">Criar meu drink</button>
+    <button class="btn" id="gen3">3 opções</button>
+    <button class="btn ghost" id="surprise">Surpresa total</button>
+    <button class="adv-toggle" id="advToggle">+ opções avançadas</button>
+  </div>
+  <div class="advanced" id="advanced">
+    <div class="mini"><span class="clab">Método</span>
+      <select id="selMet"><option value="">Tanto faz</option><option>Batido</option><option>Montado</option><option>Liquidificador</option></select></div>
+    <div class="mini"><span class="clab">Clara de ovo</span>
+      <select id="selClara"><option value="">Tanto faz</option><option value="sim">Com clara</option><option value="nao">Sem clara</option></select></div>
+    <div class="mini"><span class="clab">Teor alcoólico</span>
+      <select id="selTeor"><option value="">Tanto faz</option><option value="leve">Mais leve</option><option value="forte">Mais encorpado</option></select></div>
+  </div>
+
+  <div id="out">
+    <div class="hint"><div class="big">Seu próximo drink aparece aqui</div>Escolha uma base ou um perfil — ou clique em <b>Surpresa total</b>.</div>
+  </div>
+
+  <section class="panel" id="favPanel">
+    <h3 onclick="this.parentElement.classList.toggle('open')">
+      <svg class="cv" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      Meus favoritos <span class="pcount" id="favCount"></span>
+    </h3>
+    <div class="pbody"><div class="favgrid" id="favGrid"></div></div>
+  </section>
+
+  <section class="panel" id="invPanel">
+    <h3 onclick="this.parentElement.classList.toggle('open')">
+      <svg class="cv" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      Meu estoque <span class="pcount">o gerador só usa o que estiver marcado</span>
+    </h3>
+    <div class="pbody">
+      <p class="inv-note">Desmarque o que faltar e o gerador para de sugerir. O que você escolhe fixo lá em cima sempre é respeitado. Salvo no seu navegador.</p>
+      <div class="invgroups" id="invGroups"></div>
+    </div>
+  </section>
+
+  <footer>
+    <b>Drinks Manir · Gerador</b> — construído a partir do catálogo GS Sabores (1 destilado, 8 preparados, 10 espumas) somado à sua adega e às suas 80 receitas. As proporções seguem ratios clássicos de coquetelaria; os preparados GS já são adoçados, então o gerador equilibra acidez sem açúcar extra. Roda 100% offline.
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   PALETA DE INGREDIENTES — o que o Manir tem em casa
+   ============================================================ */
+// Destilados / licores (base). creamy = corpo cremoso. sweet = adoça o drink. cat = nome na Carta.
+const SPIRITS = [
+  {n:"Licor Fino GS (Napoleon 1789)", w:"Napoleon", cat:"Licor Fino GS", fam:["cítrico","especiarias"], creamy:false, sweet:false},
+  {n:"Gin", w:"Gin", cat:"Gin", fam:["herbal","cítrico"], creamy:false, sweet:false},
+  {n:"Vodka", w:"Vodka", cat:"Vodka", fam:["neutro"], creamy:false, sweet:false},
+  {n:"Cachaça", w:"Cachaça", cat:"Cachaça", fam:["herbal","neutro"], creamy:false, sweet:false},
+  {n:"Rum branco", w:"Rum", cat:"Rum", fam:["tropical","doce"], creamy:false, sweet:false},
+  {n:"Whisky / Bourbon", w:"Whisky", cat:"Whisky/Bourbon", fam:["amadeirado"], creamy:false, sweet:false},
+  {n:"Tequila", w:"Tequila", cat:"Tequila", fam:["agave","vegetal"], creamy:false, sweet:false},
+  {n:"Conhaque de gengibre", w:"Ginger", cat:"Conhaque de Gengibre", fam:["apimentado"], creamy:false, sweet:false},
+  {n:"Bananinha (destilado de banana)", w:"Banana", cat:"Bananinha", fam:["banana","doce"], creamy:true, sweet:true},
+  {n:"Licor cremoso de manga", w:"Manga", cat:"Licor de Manga", fam:["manga","tropical"], creamy:true, sweet:true},
+  {n:"Limoncello cremoso", w:"Limoncello", cat:"Limoncello", fam:["limão","cítrico"], creamy:true, sweet:true},
+  {n:"Licor de doce de leite Don Luiz", w:"Dulce", cat:"Doce de Leite", fam:["doce de leite","caramelo"], creamy:true, sweet:true},
+  {n:"Baileys", w:"Irish", cat:"Baileys", fam:["doce","café"], creamy:true, sweet:true},
+  {n:"Licor 43", w:"43", cat:"Licor 43", fam:["baunilha","doce"], creamy:false, sweet:true},
+  {n:"Aperol", w:"Aperol", cat:"Aperol", fam:["amargo","laranja"], creamy:false, sweet:false},
+  {n:"St-Germain (sabugueiro)", w:"Elder", cat:"St-Germain", fam:["floral"], creamy:false, sweet:true},
+  {n:"Licor de morango (Balena)", w:"Morango", cat:"Licor de Morango", fam:["morango","frutas vermelhas"], creamy:true, sweet:true},
+  {n:"Licor de pistache", w:"Pistache", cat:"Licor de Pistache", fam:["pistache","nutty","doce"], creamy:true, sweet:true},
+  {n:"Licor de melão", w:"Melão", cat:"Licor de Melão", fam:["melão","frutado","doce"], creamy:false, sweet:true}
+];
+// Extratos / preparados (sabor primário). gs = produto GS Sabores (adoçado). cat/fruit = nomes na Carta.
+const FLAVORS = [
+  {n:"Preparado GS Tangerina", w:"Tangerina", cat:"GS Tangerina", fruit:"Tangerina", fam:["cítrico","tangerina"], color:"#e8913a", garn:"gomo de tangerina", gs:true, sweet:true},
+  {n:"Preparado GS Limão Siciliano", w:"Siciliano", cat:"GS Limão Siciliano", fruit:"Limão Siciliano", fam:["cítrico","limão"], color:"#e4c84a", garn:"rodela de limão siciliano", gs:true, sweet:true},
+  {n:"Preparado GS Cranberry", w:"Cranberry", cat:"GS Cranberry", fruit:"Cranberry", fam:["frutas vermelhas","ácido"], color:"#c0392b", garn:"cereja", gs:true, sweet:true},
+  {n:"Preparado GS Maçã Verde", w:"Maçã Verde", cat:"GS Maçã Verde", fruit:"Maçã Verde", fam:["maçã verde","frutado"], color:"#8cc63f", garn:"fatia fina de maçã verde", gs:true, sweet:true},
+  {n:"Preparado GS Abacaxi & Hortelã", w:"Abacaxi", cat:"GS Abacaxi & Hortelã", fruit:"Abacaxi", fam:["tropical","abacaxi","herbal"], color:"#d9c534", garn:"fatia de abacaxi e ramo de hortelã", gs:true, sweet:true},
+  {n:"Preparado GS Gengibre", w:"Ginger", cat:"GS Gengibre", fruit:"Gengibre", fam:["apimentado","gengibre"], color:"#d99a3a", garn:"lâmina de gengibre", gs:true, sweet:true},
+  {n:"Preparado GS Pink Lemonade", w:"Pink", cat:"GS Pink Lemonade", fruit:"Pink Lemonade", fam:["cítrico","frutas vermelhas"], color:"#e86a9a", garn:"rodela de limão e meio morango", gs:true, sweet:true},
+  {n:"Preparado GS Curaçau Blue", w:"Blue", cat:"GS Curaçau Blue", fruit:"Laranja", fam:["cítrico","laranja"], color:"#2e7fc0", garn:"rodela de limão e borda de açúcar", gs:true, sweet:true},
+  {n:"Extrato alcoólico de caju", w:"Caju", cat:"Extrato de Caju", fruit:"Caju", fam:["caju","tropical","frutado"], color:"#e0a23a", garn:"fatia de caju ou castanha", gs:false, sweet:false},
+  {n:"Extrato de abacaxi com hortelã", w:"Abacaxi", cat:"Extrato de Abacaxi com Hortelã", fruit:"Abacaxi", fam:["tropical","abacaxi","herbal"], color:"#d9c534", garn:"fatia de abacaxi e hortelã", gs:false, sweet:false},
+  {n:"Extrato de maçã verde", w:"Maçã Verde", cat:"Extrato de Maçã Verde", fruit:"Maçã Verde", fam:["maçã verde","frutado"], color:"#8cc63f", garn:"fatia fina de maçã verde", gs:false, sweet:false},
+  {n:"Extrato de lichia", w:"Lichia", cat:"Extrato de Lichia", fruit:"Lichia", fam:["lichia","floral","frutado"], color:"#e3a7c0", garn:"lichia descascada ou pétala comestível", gs:false, sweet:true}
+];
+// Espumas GS disponíveis (acabamento)
+const FOAMS = ["Limão Siciliano","Limão","Gengibre","Frutas Vermelhas","Tangerina","Pitaya","Maçã Verde","Melancia","Cereja","Morango"];
+
+const PFCOLOR = {"Cítrico":"--p-citrico","Sour":"--p-sour","Cremoso":"--p-cremoso","Apimentado":"--p-apimentado","Amargo":"--p-amargo","Floral":"--p-floral","Frutado":"--p-frutado","Tropical":"--p-tropical","Refrescante":"--p-refrescante","Doce":"--p-doce"};
+const PERFIS = ["Sour","Cítrico","Refrescante","Cremoso","Tropical","Apimentado","Amargo","Floral","Doce"];
+
+/* afinidades: quais bases/sabores combinam com cada perfil */
+const BASE_POOL = {
+  Sour:["Whisky / Bourbon","Gin","Tequila","Cachaça","Vodka","Licor Fino GS (Napoleon 1789)","Conhaque de gengibre","Bananinha (destilado de banana)","Limoncello cremoso","Aperol","St-Germain (sabugueiro)"],
+  Cítrico:["Gin","Vodka","Tequila","Licor Fino GS (Napoleon 1789)","Whisky / Bourbon","Cachaça","Licor de melão"],
+  Refrescante:["Gin","Vodka","Tequila","Cachaça","Licor Fino GS (Napoleon 1789)","Licor de melão"],
+  Cremoso:["Vodka","Baileys","Licor de doce de leite Don Luiz","Licor cremoso de manga","Limoncello cremoso","Bananinha (destilado de banana)","Rum branco","Licor de morango (Balena)","Licor de pistache"],
+  Tropical:["Rum branco","Tequila","Cachaça","Gin","Bananinha (destilado de banana)","Licor cremoso de manga","Licor 43","Licor de melão"],
+  Apimentado:["Conhaque de gengibre","Tequila","Cachaça","Whisky / Bourbon","Gin"],
+  Amargo:["Aperol","Licor Fino GS (Napoleon 1789)","Gin","Whisky / Bourbon"],
+  Floral:["St-Germain (sabugueiro)","Gin","Vodka","Tequila"],
+  Doce:["Licor de doce de leite Don Luiz","Baileys","Licor 43","Bananinha (destilado de banana)","Vodka","Rum branco","Licor de pistache"]
+};
+const FLAVOR_POOL = {
+  Sour:["Preparado GS Limão Siciliano","Preparado GS Maçã Verde","Preparado GS Cranberry","Preparado GS Tangerina","Preparado GS Pink Lemonade","Extrato alcoólico de caju","Extrato de maçã verde","Extrato de lichia"],
+  Cítrico:["Preparado GS Limão Siciliano","Preparado GS Tangerina","Preparado GS Curaçau Blue","Preparado GS Pink Lemonade","Preparado GS Maçã Verde","Extrato de lichia"],
+  Refrescante:["Preparado GS Abacaxi & Hortelã","Preparado GS Limão Siciliano","Preparado GS Tangerina","Preparado GS Curaçau Blue","Preparado GS Maçã Verde","Extrato de lichia"],
+  Cremoso:["Preparado GS Maçã Verde","Preparado GS Cranberry","Preparado GS Tangerina","Extrato alcoólico de caju"],
+  Tropical:["Preparado GS Abacaxi & Hortelã","Extrato alcoólico de caju","Extrato de abacaxi com hortelã"],
+  Apimentado:["Preparado GS Gengibre"],
+  Amargo:["Preparado GS Limão Siciliano","Preparado GS Tangerina"],
+  Floral:["Preparado GS Limão Siciliano","Preparado GS Maçã Verde","Preparado GS Tangerina","Extrato de lichia"],
+  Doce:["Preparado GS Maçã Verde","Extrato alcoólico de caju","Preparado GS Cranberry"]
+};
+
+/* ============================================================
+   ESTADO + HELPERS
+   ============================================================ */
+const sel = {base:"", flavor:"", perfil:"", met:"", clara:"", teor:""};
+const rnd = a => a[Math.floor(Math.random()*a.length)];
+const chance = p => Math.random() < p;
+const r5 = n => Math.round(n/5)*5;
+const between = (a,b)=> r5(a + Math.random()*(b-a));
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const spiritByName = n => SPIRITS.find(s=>s.n===n);
+const flavorByName = n => FLAVORS.find(f=>f.n===n);
+
+let INV = loadInv();   // estoque do usuário
+function loadInv(){ try{return JSON.parse(localStorage.getItem("dm_inv"))||{}}catch(e){return {}} }
+const available = n => INV[n] !== false;     // default disponível
+function pool(arr){ const a = arr.filter(available); return a.length?a:arr; }
+
+/* ============================================================
+   MOTOR DE GERAÇÃO
+   ============================================================ */
+function resolvePerfil(){
+  if(sel.perfil) return sel.perfil;
+  // deduz a partir da base/sabor escolhidos
+  let cand = [...PERFIS];
+  if(sel.base){ cand = cand.filter(p => (BASE_POOL[p]||[]).includes(sel.base)); }
+  if(sel.flavor){ const c2 = cand.filter(p => (FLAVOR_POOL[p]||[]).includes(sel.flavor)); if(c2.length) cand = c2; }
+  if(!cand.length) cand = ["Sour","Cítrico","Tropical","Cremoso","Refrescante"];
+  return rnd(cand);
+}
+function resolveBase(perfil){
+  if(sel.base==="__none") return null;            // sem álcool
+  if(sel.base) return spiritByName(sel.base);
+  let p = pool(BASE_POOL[perfil]||SPIRITS.map(s=>s.n));
+  // teor leve evita licores muito alcoólicos pesados — mantém simples
+  return spiritByName(rnd(p));
+}
+function resolveFlavor(perfil, base){
+  if(sel.flavor) return flavorByName(sel.flavor);
+  let p = pool(FLAVOR_POOL[perfil]||FLAVORS.map(f=>f.n));
+  // afinidade leve: caju casa com gin; manga/banana já vêm da base
+  return flavorByName(rnd(p));
+}
+function creamLiqueur(base){
+  if(base && base.creamy) return base;
+  const opts = pool(["Baileys","Licor de doce de leite Don Luiz","Limoncello cremoso","Licor cremoso de manga","Licor de pistache"]);
+  return spiritByName(rnd(opts));
+}
+function pickFoam(fams){
+  const has = t => fams.includes(t);
+  let pref;
+  if(has("apimentado")||has("gengibre")) pref=["Gengibre"];
+  else if(has("melão")) pref=["Melancia","Maçã Verde","Limão"];
+  else if(has("lichia")) pref=["Morango","Cereja","Frutas Vermelhas"];
+  else if(has("maçã verde")) pref=["Maçã Verde"];
+  else if(has("frutas vermelhas")||has("morango")) pref=["Frutas Vermelhas","Morango","Cereja"];
+  else if(has("tangerina")) pref=["Tangerina"];
+  else if(has("floral")) pref=["Morango","Cereja","Frutas Vermelhas"];
+  else if(has("tropical")||has("abacaxi")||has("caju")) pref=["Pitaya","Melancia","Limão","Cereja"];
+  else if(has("laranja")) pref=["Tangerina","Limão Siciliano"];
+  else if(has("cítrico")||has("limão")) pref=["Limão Siciliano","Limão"];
+  else pref=["Limão Siciliano"];
+  const ok = pref.filter(f=>available("Espuma "+f));
+  return (ok.length?rnd(ok):rnd(pref));
+}
+// componentes que adoçam (preparados GS + licores doces) — pra equilibrar a acidez
+const SWEET = new Set([...SPIRITS.filter(s=>s.sweet).map(s=>s.n), ...FLAVORS.filter(f=>f.sweet).map(f=>f.n)]);
+const ACID = ()=> rnd(pool(["suco de limão tahiti","suco de limão siciliano"]));
+const LONG = ()=> rnd(pool(["água com gás","água tônica","soda limão"]));
+
+/* nomes */
+const STYLE = {
+  Sour:["Sour"], Cítrico:["Citrus","Cooler","Highball","Crush"], Refrescante:["Cooler","Fizz","Breeze","Spritz"],
+  Cremoso:["Cream","Velvet","Dream","Bliss"], Tropical:["Tropical","Tiki","Sunset","Paradise"],
+  Apimentado:["Mule","Spice","Fire","Kick"], Amargo:["Spritz","Bitter","Aperitivo"],
+  Floral:["Garden","Bloom","Fizz","Petal"], Doce:["Dessert","Caramel","Martini","Indulgência"]
+};
+const ADJ = ["Golden","Wild","Royal","Sunset","Midnight","Crystal","Velvet","Smooth","Don","Lua"];
+function makeName(flavor, base, perfil){
+  const fw = flavor?flavor.w:null, bw = base?base.w:null, st = rnd(STYLE[perfil]||["Drink"]);
+  const pats = [];
+  if(fw&&bw) pats.push(`${fw} ${bw} ${st}`);
+  if(fw) pats.push(`${fw} ${st}`, `${rnd(ADJ)} ${fw} ${st}`);
+  if(bw&&fw) pats.push(`${bw} ${fw} ${st}`);
+  if(!pats.length) pats.push(`${rnd(ADJ)} ${st}`);
+  return rnd(pats).replace(/\s+/g," ").trim();
+}
+
+/* descrição (vibe) */
+function prose(flavor){
+  if(!flavor) return "a fruta";
+  const m={Ginger:"gengibre", Blue:"curaçau azul", Pink:"pink lemonade", Siciliano:"limão siciliano", Caju:"caju"};
+  return (m[flavor.w]||flavor.w).toLowerCase();
+}
+function makeVibe(perfil, flavor, foam){
+  const f = prose(flavor);
+  const isGinger = f==="gengibre";
+  const T = {
+    Sour:`Equilíbrio clássico de sour: ${f} em destaque, acidez na medida e textura aveludada da espuma de ${foam.toLowerCase()}.`,
+    Cítrico:`Longo e cítrico, com ${f} brilhando do gole ao final e borbulha que mantém tudo leve.`,
+    Refrescante:`Pensado pra dia quente — ${f}, muito gelo e final ${foam.toLowerCase()} pra arrematar.`,
+    Cremoso:`Aveludado e indulgente, ${f} encontra o creme num gole que lembra sobremesa.`,
+    Tropical:`Clima de praia: ${f} tropical, gelo batido e cor que já entrega a festa.`,
+    Apimentado: isGinger
+      ? `Puro gengibre no comando: calor que sobe, limão pra cortar e final na espuma — pega no fundo da garganta, do jeito bom.`
+      : `Tem o calor do gengibre por baixo do ${f} — pega no fundo da garganta, do jeito bom.`,
+    Amargo:`Amargor elegante de aperitivo, ${f} pra abrir o apetite sem pesar.`,
+    Floral:`Delicado e perfumado, o floral do sabugueiro conversa com o ${f} num drink fino.`,
+    Doce:`Sobremesa em taça — ${f} cremoso e doce na medida pra fechar a noite.`
+  };
+  return T[perfil] || `Drink ${perfil.toLowerCase()} com ${f}.`;
+}
+
+/* ===== construtores por perfil ===== */
+function build(perfil){
+  const base = resolveBase(perfil);
+  const flavor = resolveFlavor(perfil, base);
+  const ing = [];
+  let method="Batido", glass="copo baixo", clara=false, foamFams=[...(flavor?flavor.fam:[]), ...(base?base.fam:[])];
+
+  const addBase = (a,b)=> base && ing.push({amt:between(a,b)+" ml", nm:base.n});
+  const addFlavor = (a,b)=> flavor && ing.push({amt:between(a,b)+" ml", nm:flavor.n});
+
+  if(perfil==="Sour"){
+    method="Batido"; glass=rnd(["taça coupé","copo baixo"]); clara = sel.clara!=="nao";
+    addBase(45,50); addFlavor(30,40);
+    ing.push({amt:between(15,25)+" ml", nm:ACID()});
+    if(clara) ing.push({amt:"1 un", nm:"clara de ovo", note:"emulsão e espuma"});
+  }
+  else if(perfil==="Cítrico" || perfil==="Refrescante"){
+    method="Montado"; glass=rnd(["copo alto","copo highball"]);
+    addBase(40,50); addFlavor(45,60);
+    ing.push({amt:between(10,15)+" ml", nm:ACID()});
+    ing.push({amt:"completar", nm: perfil==="Refrescante"? rnd(pool(["água com gás","ginger ale","soda limão"])) : LONG()});
+  }
+  else if(perfil==="Cremoso"){
+    method = chance(.3)?"Liquidificador":"Batido"; glass=rnd(["taça martini","copo baixo"]);
+    const cream = creamLiqueur(base);
+    if(base && base!==cream) ing.push({amt:between(25,35)+" ml", nm:base.n});
+    ing.push({amt:between(20,30)+" ml", nm:cream.n});
+    addFlavor(30,40);
+    ing.push({amt:between(20,40)+" ml", nm:rnd(pool(["leite integral","creme de leite fresco","bebida vegetal cremosa"]))});
+    foamFams = [...foamFams, ...cream.fam];
+  }
+  else if(perfil==="Tropical"){
+    method = chance(.35)?"Liquidificador":"Batido"; glass=rnd(["copo alto","taça"]);
+    addBase(40,50); addFlavor(30,45);
+    ing.push({amt:between(15,20)+" ml", nm:ACID()});
+    if(method==="Liquidificador") ing.push({amt:between(30,50)+" ml", nm:"leite de coco"});
+    else if(chance(.4)) ing.push({amt:between(15,25)+" ml", nm:"suco de maracujá sem açúcar"});
+  }
+  else if(perfil==="Apimentado"){
+    const mule = chance(.5); method = mule?"Montado":"Batido"; glass = mule?"caneca de cobre":"copo baixo";
+    addBase(35,45);
+    if(flavor && flavor.fam.includes("gengibre")) addFlavor(25,35);
+    else { ing.push({amt:between(25,35)+" ml", nm:"Preparado GS Gengibre"}); if(flavor) addFlavor(15,20); foamFams.push("gengibre"); }
+    ing.push({amt:between(10,15)+" ml", nm:ACID()});
+    if(mule) ing.push({amt:"completar", nm:rnd(pool(["ginger ale","ginger beer"]))});
+  }
+  else if(perfil==="Amargo"){
+    method="Montado"; glass="taça de vinho";
+    if(base && base.n==="Aperol"){ ing.push({amt:between(25,30)+" ml", nm:"Aperol"}); }
+    else { ing.push({amt:"25 ml", nm:"Aperol"}); if(base) ing.push({amt:between(20,25)+" ml", nm:base.n}); }
+    addFlavor(40,50);
+    ing.push({amt:between(60,90)+" ml", nm:rnd(pool(["espumante brut","água com gás"]))});
+    if(chance(.5)) ing.push({amt:"completar", nm:"soda limão"});
+  }
+  else if(perfil==="Floral"){
+    const fizz = chance(.5); method = fizz?"Montado":"Batido"; glass = fizz?"copo alto":"taça coupé";
+    if(base && base.n.includes("St-Germain")) ing.push({amt:between(25,30)+" ml", nm:"St-Germain (sabugueiro)"});
+    else { ing.push({amt:"25 ml", nm:"St-Germain (sabugueiro)"}); if(base) ing.push({amt:between(20,25)+" ml", nm:base.n}); }
+    addFlavor(35,45);
+    ing.push({amt:between(10,15)+" ml", nm:ACID()});
+    if(fizz) ing.push({amt:"completar", nm:"água com gás"}); else { clara = sel.clara!=="nao"; if(clara) ing.push({amt:"1 un", nm:"clara de ovo"}); }
+    foamFams.push("floral");
+  }
+  else if(perfil==="Doce"){
+    method="Batido"; glass="taça martini";
+    const cream = creamLiqueur(base && !base.creamy ? base : null);
+    ing.push({amt:between(35,40)+" ml", nm: base && base.creamy ? base.n : "Licor de doce de leite Don Luiz"});
+    if(base && !base.creamy) ing.push({amt:between(25,30)+" ml", nm:base.n});
+    const sweetWay = rnd(["café","banana","cremoso"]);
+    if(sweetWay==="café") ing.push({amt:between(20,30)+" ml", nm:"café espresso forte, frio"});
+    else if(sweetWay==="banana") ing.push({amt:between(20,25)+" ml", nm:"Bananinha (destilado de banana)"});
+    else ing.push({amt:between(20,30)+" ml", nm:"creme de leite fresco"});
+    if(chance(.6)) ing.push({amt:"1 pitada", nm:"canela em pó", note:"e um pouco pra decorar"});
+    foamFams.push("doce de leite");
+  }
+
+  // espuma de acabamento (exceto quando claramente não cabe)
+  const foam = pickFoam(foamFams);
+  const wantsFoam = !(perfil==="Doce" && chance(.5));
+  if(wantsFoam) ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
+  ing.push({amt:"a gosto", nm:"gelo"});
+
+  // método forçado pelo usuário
+  if(sel.met) method = sel.met;
+
+  // equilíbrio de doçura — preparados e licores GS já são adoçados
+  const sweetCount = ing.filter(i=>SWEET.has(i.nm)).length;
+  let balance="";
+  if(sweetCount>=2){
+    const a = ing.find(i=>/limão/i.test(i.nm) && /ml$/.test(i.amt));
+    if(a) a.amt = (parseInt(a.amt)+5)+" ml";
+    balance = " Os preparados e licores GS já vêm adoçados — prove antes de servir e suba o limão se achar doce demais.";
+  }
+
+  const garn = (flavor&&flavor.garn) || "rodela de limão";
+  const name = makeName(flavor, base, perfil);
+  const color = (flavor&&flavor.color) || "#d39a4c";
+  const tags = perfilTags(perfil, flavor, base);
+  const vibe = makeVibe(perfil, flavor, foam);
+  const steps = makeSteps(method, glass, foam, garn, clara) + balance;
+
+  return {name, perfil, tags, base:base?base.n:"Sem álcool (mocktail)", flavor:flavor?flavor.n:null, method, glass, foam, garn, ing, vibe, steps, color, clara};
+}
+
+function buildMocktail(perfil){
+  // sem destilado: 2 preparados + acidez + long + espuma
+  const f1 = sel.flavor? flavorByName(sel.flavor) : flavorByName(rnd(pool(FLAVOR_POOL[perfil]||FLAVORS.map(f=>f.n))));
+  const f2 = flavorByName(rnd(pool(FLAVORS.filter(f=>f.gs && f!==f1).map(f=>f.n))));
+  const ing=[{amt:between(50,70)+" ml", nm:f1.n}];
+  if(f2 && f2!==f1) ing.push({amt:between(20,30)+" ml", nm:f2.n});
+  ing.push({amt:between(10,15)+" ml", nm:ACID()});
+  ing.push({amt:"completar", nm:rnd(["água com gás","água tônica","soda limão"])});
+  const foam = pickFoam(f1.fam);
+  ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
+  ing.push({amt:"a gosto", nm:"gelo"});
+  const name = makeName(f1, null, perfil)+" Zero";
+  return {name, perfil, tags:perfilTags(perfil,f1,null), base:"Sem álcool (mocktail)", flavor:f1.n, method:"Montado", glass:"copo alto", foam, garn:f1.garn, ing, vibe:`Sem álcool e sem perder a graça — ${f1.w.toLowerCase()} com borbulha e final ${foam.toLowerCase()}.`, steps:makeSteps("Montado","copo alto",foam,f1.garn,false), color:f1.color, clara:false};
+}
+
+function perfilTags(perfil, flavor, base){
+  const t = new Set([perfil]);
+  const fams = [...(flavor?flavor.fam:[]), ...(base?base.fam:[])];
+  if(fams.includes("cítrico")||fams.includes("limão")) t.add("Cítrico");
+  if(fams.includes("tropical")||fams.includes("abacaxi")||fams.includes("manga")||fams.includes("caju")) t.add("Tropical");
+  if(fams.includes("frutas vermelhas")||fams.includes("morango")||fams.includes("maçã verde")||fams.includes("banana")) t.add("Frutado");
+  if(base&&base.creamy && perfil!=="Cremoso") t.add("Cremoso");
+  if(fams.includes("floral")) t.add("Floral");
+  if(fams.includes("amargo")) t.add("Amargo");
+  if(fams.includes("apimentado")||fams.includes("gengibre")) t.add("Apimentado");
+  return [...t].slice(0,4);
+}
+
+function makeSteps(method, glass, foam, garn, clara){
+  if(method==="Liquidificador")
+    return `No liquidificador, bata todos os líquidos com o gelo até ficar cremoso e homogêneo. Sirva no ${glass}. Finalize com a espuma de ${foam.toLowerCase()} e ${garn}.`;
+  if(method==="Montado")
+    return `No ${glass} com bastante gelo, adicione os líquidos (menos o que é gaseificado) e mexa pra integrar. Complete com o gaseificado por cima. Finalize com a espuma de ${foam.toLowerCase()} e ${garn}.`;
+  // Batido
+  const dry = clara ? "Faça um dry shake (sem gelo) pra emulsionar a clara, depois bata de novo com gelo. " : "Bata com bastante gelo por 10–12 segundos. ";
+  return `Na coqueteleira, junte todos os ingredientes (menos a espuma e o gelo de servir). ${dry}Coe para o ${glass}. Finalize com a espuma de ${foam.toLowerCase()} e ${garn}.`;
+}
+
+function generate(){
+  try{
+    const perfil = resolvePerfil();
+    return sel.base==="__none" ? buildMocktail(perfil) : build(perfil);
+  }catch(e){ console.error(e); return build("Sour"); }
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+const out = document.getElementById("out");
+function pfChipHtml(t){
+  const c = PFCOLOR[t]?`var(${PFCOLOR[t]})`:"var(--ink-soft)";
+  return `<span class="pf" style="color:${c};background:color-mix(in srgb, ${c} 15%, transparent)"><span class="pdot" style="background:${c}"></span>${t}</span>`;
+}
+function drinkHtml(d, idx){
+  return `<article class="drink" data-idx="${idx}">
+    <div class="band" style="background:linear-gradient(90deg, ${d.color}, transparent 85%)"></div>
+    <div class="body">
+      <div class="meta"><span class="tag-base">${d.base}</span><span class="tag-met">${d.method}</span></div>
+      <h2>${d.name}</h2>
+      <p class="vibe">${d.vibe}</p>
+      <div class="perfis">${d.tags.map(pfChipHtml).join("")}</div>
+      <div class="rh">Ingredientes</div>
+      <ul class="ing">${d.ing.map(i=>`<li><span class="nm">${i.nm}${i.note?`<small>${i.note}</small>`:""}</span><span class="amt">${i.amt}</span></li>`).join("")}</ul>
+      <div class="rh">Preparo</div>
+      <p class="steps">${d.steps}</p>
+      <div class="foot"><span><b>Copo:</b> ${d.glass}</span><span><b>Espuma:</b> ${d.foam}</span><span><b>Decoração:</b> ${d.garn}</span></div>
+      <div class="dbtns">
+        <button class="dbtn" data-act="carta">+ Salvar na carta</button>
+        <button class="dbtn" data-act="again">↻ Outra variação</button>
+        <button class="dbtn" data-act="copy">⧉ Copiar receita</button>
+        <button class="dbtn" data-act="save">♥ Favoritar</button>
+      </div>
+    </div>
+  </article>`;
+}
+let current = [];
+function show(drinks){
+  current = drinks;
+  out.classList.toggle("triple", drinks.length>1);
+  out.innerHTML = drinks.map(drinkHtml).join("");
+}
+
+function recipeText(d){
+  return `${d.name}\n${d.perfil} · ${d.method} · ${d.glass}\n\nIngredientes:\n`+
+    d.ing.map(i=>`- ${i.amt} ${i.nm}${i.note?" ("+i.note+")":""}`).join("\n")+
+    `\n\nPreparo:\n${d.steps}\n\nDecoração: ${d.garn}\n— Drinks Manir`;
+}
+
+/* ============================================================
+   SALVAR NA CARTA  (compartilhado com index.html via localStorage)
+   ============================================================ */
+const FRUITMAP = {"Licor de Manga":"Manga","Bananinha":"Banana","Licor de Morango":"Frutas Vermelhas","Licor de Melão":"Melão","Doce de Leite":"Doce de Leite","Limoncello":"Limão Siciliano","Licor de Pistache":"Pistache"};
+function loadCarta(){ try{return JSON.parse(localStorage.getItem("dm_carta"))||[]}catch(e){return []} }
+function saveCarta(c){ localStorage.setItem("dm_carta", JSON.stringify(c)); }
+function drinkToCarta(d){
+  const desSet=new Set();
+  d.ing.forEach(i=>{ const s=SPIRITS.find(x=>x.n===i.nm); if(s) desSet.add(s.cat); });
+  if(d.base==="Sem álcool (mocktail)") desSet.add("Sem álcool");
+  const des=[...desSet]; if(!des.length) des.push("Sem álcool");
+  const fl=FLAVORS.find(f=>f.n===d.flavor);
+  const ext = fl?[fl.cat]:["Sem extrato (sucos naturais)"];
+  let esp;
+  if(d.ing.some(i=>/^Espuma GS/.test(i.nm))) esp=["Espuma de "+d.foam];
+  else if(d.clara) esp=["Clara de ovo"]; else esp=["Sem espuma"];
+  const fruSet=new Set(); if(fl&&fl.fruit) fruSet.add(fl.fruit);
+  d.ing.forEach(i=>{ const s=SPIRITS.find(x=>x.n===i.nm); if(s&&FRUITMAP[s.cat]) fruSet.add(FRUITMAP[s.cat]); });
+  const fru=[...fruSet]; if(!fru.length) fru.push("Cítrico");
+  const ing=d.ing.map(i=> /ml$/.test(i.amt) ? `${i.amt} de ${i.nm}${i.note?` (${i.note})`:""}` : `${cap(i.nm)} — ${i.amt}${i.note?` (${i.note})`:""}`);
+  return {n:d.name,o:"Criação própria",des,ext,esp,fru,pf:d.tags,met:d.method,clara:!!d.clara,ing,pre:d.steps,copo:d.glass,desc:d.vibe,custom:true};
+}
+function addToCarta(d){
+  const c=loadCarta();
+  if(c.some(x=>x.n===d.name)){ toast("Esse já está na carta"); return false; }
+  c.unshift(drinkToCarta(d)); saveCarta(c);
+  toast("Salvo na carta — abra/atualize a aba Carta");
+  return true;
+}
+
+/* ============================================================
+   FAVORITOS
+   ============================================================ */
+function loadFavs(){ try{return JSON.parse(localStorage.getItem("dm_favs"))||[]}catch(e){return []} }
+function saveFavs(f){ localStorage.setItem("dm_favs", JSON.stringify(f)); }
+function addFav(d){ const f=loadFavs(); if(!f.some(x=>x.name===d.name)){ f.unshift(d); saveFavs(f); renderFavs(); toast("Salvo nos favoritos"); } else toast("Já estava salvo"); }
+function renderFavs(){
+  const f=loadFavs(); const g=document.getElementById("favGrid");
+  document.getElementById("favCount").textContent = f.length?`(${f.length})`:"";
+  if(!f.length){ g.innerHTML=`<p style="color:var(--ink-faint);font-size:13px">Nada salvo ainda. Gere um drink e clique em ♥ Salvar.</p>`; return; }
+  g.innerHTML = f.map((d,i)=>`<div class="favcard">
+    <h4>${d.name}</h4><div class="fmeta">${d.perfil} · ${d.base} · ${d.method}</div>
+    <button class="frm" data-fav="${i}" data-act="see">ver receita</button> &nbsp;·&nbsp;
+    <button class="frm" data-fav="${i}" data-act="carta">enviar pra carta</button> &nbsp;·&nbsp;
+    <button class="frm" data-fav="${i}" data-act="del">remover</button>
+  </div>`).join("");
+}
+
+/* ============================================================
+   ESTOQUE
+   ============================================================ */
+function renderInv(){
+  const groups = [
+    {t:"Destilados & licores", items:SPIRITS.map(s=>s.n)},
+    {t:"Preparados & extratos", items:FLAVORS.map(f=>f.n)},
+    {t:"Espumas GS", items:FOAMS.map(f=>"Espuma "+f)}
+  ];
+  document.getElementById("invGroups").innerHTML = groups.map(gr=>`<div class="invcol"><h5>${gr.t}</h5>${
+    gr.items.map(n=>`<label><input type="checkbox" data-inv="${n.replace(/"/g,'&quot;')}" ${available(n)?"checked":""}> ${n}</label>`).join("")
+  }</div>`).join("");
+}
+document.getElementById("invGroups").addEventListener("change", e=>{
+  if(e.target.dataset.inv!==undefined){ INV[e.target.dataset.inv] = e.target.checked; localStorage.setItem("dm_inv", JSON.stringify(INV)); buildSelects(); }
+});
+
+/* ============================================================
+   UI WIRING
+   ============================================================ */
+function buildSelects(){
+  const b=document.getElementById("selBase");
+  b.innerHTML = `<option value="">Tanto faz</option>`+
+    SPIRITS.filter(s=>available(s.n)).map(s=>`<option value="${s.n}">${s.n}</option>`).join("")+
+    `<option value="__none">Sem álcool (mocktail)</option>`;
+  b.value = sel.base;
+  const f=document.getElementById("selFlavor");
+  f.innerHTML = `<option value="">Tanto faz</option>`+
+    FLAVORS.filter(x=>available(x.n)).map(x=>`<option value="${x.n}">${x.n}</option>`).join("");
+  f.value = sel.flavor;
+}
+function buildPfChips(){
+  document.getElementById("pfChips").innerHTML = PERFIS.map(p=>{
+    const c=`var(${PFCOLOR[p]})`;
+    return `<button class="pfchip" data-pf="${p}" aria-pressed="false" style="--c:${c}"><span class="dot" style="background:${c}"></span>${p}</button>`;
+  }).join("");
+  document.querySelectorAll(".pfchip").forEach(ch=>ch.addEventListener("click",()=>{
+    const p=ch.dataset.pf, on = sel.perfil===p;
+    document.querySelectorAll(".pfchip").forEach(x=>{x.setAttribute("aria-pressed","false");x.style.background="";x.style.borderColor="";});
+    if(!on){ sel.perfil=p; ch.setAttribute("aria-pressed","true"); ch.style.background=`var(${PFCOLOR[p]})`; }
+    else sel.perfil="";
+  }));
+}
+
+document.getElementById("selBase").addEventListener("change",e=>sel.base=e.target.value);
+document.getElementById("selFlavor").addEventListener("change",e=>sel.flavor=e.target.value);
+document.getElementById("selMet").addEventListener("change",e=>sel.met=e.target.value);
+document.getElementById("selClara").addEventListener("change",e=>sel.clara=e.target.value);
+document.getElementById("selTeor").addEventListener("change",e=>sel.teor=e.target.value);
+document.getElementById("advToggle").addEventListener("click",()=>document.getElementById("advanced").classList.toggle("show"));
+
+document.getElementById("gen").addEventListener("click",()=>show([generate()]));
+document.getElementById("gen3").addEventListener("click",()=>{
+  const arr=[]; const names=new Set();
+  for(let i=0;i<24 && arr.length<3;i++){ const d=generate(); if(!names.has(d.name)){names.add(d.name);arr.push(d);} }
+  show(arr);
+});
+document.getElementById("surprise").addEventListener("click",()=>{
+  sel.base="";sel.flavor="";sel.perfil="";sel.met="";sel.clara="";sel.teor="";
+  buildSelects(); document.querySelectorAll(".pfchip").forEach(x=>{x.setAttribute("aria-pressed","false");x.style.background="";});
+  document.getElementById("selMet").value="";document.getElementById("selClara").value="";document.getElementById("selTeor").value="";
+  show([generate()]);
+});
+
+// ações dentro dos cards
+out.addEventListener("click",e=>{
+  const btn=e.target.closest(".dbtn"); if(!btn) return;
+  const card=e.target.closest(".drink"); const idx=+card.dataset.idx; const d=current[idx];
+  if(btn.dataset.act==="again"){ const nd=generate(); current[idx]=nd; card.outerHTML=drinkHtml(nd,idx); }
+  else if(btn.dataset.act==="copy"){ navigator.clipboard?.writeText(recipeText(d)).then(()=>toast("Receita copiada")); }
+  else if(btn.dataset.act==="save"){ addFav(d); btn.classList.add("saved"); btn.textContent="♥ Favoritado"; }
+  else if(btn.dataset.act==="carta"){ if(addToCarta(d)){ btn.classList.add("saved"); btn.textContent="✓ Na carta"; } }
+});
+// ações nos favoritos
+document.getElementById("favGrid").addEventListener("click",e=>{
+  const btn=e.target.closest(".frm"); if(!btn) return;
+  const f=loadFavs(); const i=+btn.dataset.fav;
+  if(btn.dataset.act==="del"){ f.splice(i,1); saveFavs(f); renderFavs(); }
+  else if(btn.dataset.act==="carta"){ addToCarta(f[i]); }
+  else if(btn.dataset.act==="see"){ document.getElementById("favPanel").classList.remove("open"); show([f[i]]); window.scrollTo({top:0,behavior:"smooth"}); }
+});
+
+/* toast */
+let toastT;
+function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1800); }
+
+/* init */
+buildSelects(); buildPfChips(); renderFavs(); renderInv();
+</script>
+<script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>

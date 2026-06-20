@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drinks Manir — Carta interativa</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#15110d">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Drinks Manir">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#15110d;
+    --bg-2:#1b1610;
+    --surface:#221b14;
+    --surface-2:#2a2118;
+    --line:#3a2f23;
+    --line-soft:#2f261c;
+    --ink:#f3e9da;
+    --ink-soft:#b6a489;
+    --ink-faint:#8a7860;
+    --gold:#d39a4c;
+    --gold-deep:#b87f33;
+    --shadow:0 18px 40px -22px rgba(0,0,0,.8);
+
+    --p-citrico:#c6d63e;
+    --p-sour:#ecb53a;
+    --p-cremoso:#e9d6ad;
+    --p-apimentado:#e6602c;
+    --p-amargo:#bf5326;
+    --p-floral:#cf95cf;
+    --p-frutado:#e2557b;
+    --p-tropical:#2eb39f;
+    --p-refrescante:#4fb6d9;
+    --p-doce:#e29ac4;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;
+    font-family:"Hanken Grotesk",system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(1100px 520px at 12% -8%, rgba(211,154,76,.14), transparent 60%),
+      radial-gradient(900px 600px at 108% 4%, rgba(46,179,159,.08), transparent 55%),
+      linear-gradient(180deg,var(--bg),var(--bg-2));
+    background-attachment:fixed;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== Nav ===== */
+  .topnav{display:flex;gap:8px;align-items:center;max-width:1320px;margin:0 auto;padding:18px 28px 0;font-family:"Space Mono",monospace;font-size:12px}
+  .topnav a{color:var(--ink-faint);text-decoration:none;padding:7px 13px;border-radius:9px;border:1px solid transparent;letter-spacing:.04em}
+  .topnav a:hover{color:var(--ink)}
+  .topnav a.on{color:var(--gold);border-color:var(--line);background:var(--surface)}
+  .topnav a.cta{color:var(--gold);border-color:var(--gold-deep);background:color-mix(in srgb, var(--gold) 12%, transparent);font-weight:700}
+  .topnav a.cta:hover{background:var(--gold);color:#231a0f}
+  .topnav .sep{flex:1}
+  .topnav .brand{color:var(--ink-faint)}
+
+  /* ===== Header ===== */
+  header{
+    padding:22px 28px 22px;
+    border-bottom:1px solid var(--line-soft);
+    max-width:1320px;margin:0 auto;
+  }
+  .kicker{
+    font-family:"Space Mono",monospace;
+    font-size:11px;letter-spacing:.34em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 10px;
+  }
+  h1{
+    font-family:"Fraunces",Georgia,serif;
+    font-weight:600;font-size:clamp(38px,7vw,72px);
+    line-height:.96;margin:0;letter-spacing:-.02em;
+    color:var(--ink);
+  }
+  h1 em{font-style:italic;font-weight:500;color:var(--gold)}
+  .lede{
+    margin:14px 0 0;max-width:60ch;color:var(--ink-soft);
+    font-size:15.5px;line-height:1.55;
+  }
+  .lede b{color:var(--ink);font-weight:600}
+
+  /* ===== Toolbar ===== */
+  .toolbar{
+    position:sticky;top:0;z-index:30;
+    background:linear-gradient(180deg, rgba(21,17,13,.96), rgba(21,17,13,.86));
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .toolbar-in{
+    max-width:1320px;margin:0 auto;padding:14px 28px;
+    display:flex;gap:14px;align-items:center;flex-wrap:wrap;
+  }
+  .search{
+    position:relative;flex:1 1 320px;min-width:220px;
+  }
+  .search input{
+    width:100%;padding:13px 16px 13px 42px;
+    background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    color:var(--ink);font-size:15px;font-family:inherit;
+    transition:border-color .2s, box-shadow .2s;
+  }
+  .search input::placeholder{color:var(--ink-faint)}
+  .search input:focus{outline:none;border-color:var(--gold-deep);box-shadow:0 0 0 3px rgba(211,154,76,.16)}
+  .search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:17px;height:17px;stroke:var(--ink-faint)}
+  .count{
+    font-family:"Space Mono",monospace;font-size:13px;color:var(--ink-soft);
+    white-space:nowrap;letter-spacing:.02em;
+  }
+  .count b{color:var(--gold);font-size:16px}
+  .tbtn{
+    font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;
+    padding:12px 16px;border-radius:11px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink);
+    display:inline-flex;align-items:center;gap:7px;
+    transition:all .18s;white-space:nowrap;
+  }
+  .tbtn:hover{border-color:var(--gold-deep);color:#fff;transform:translateY(-1px)}
+  .tbtn.ghost{background:transparent}
+  .tbtn.accent{background:linear-gradient(180deg,var(--gold),var(--gold-deep));border-color:var(--gold-deep);color:#231a0f}
+  .tbtn.accent:hover{filter:brightness(1.08)}
+  .tbtn.gen-cta{font-size:15px;padding:13px 20px;font-weight:700;gap:9px;text-decoration:none;box-shadow:0 6px 18px -8px rgba(211,154,76,.6)}
+  .tbtn.gen-cta svg{width:17px;height:17px}
+  .tbtn.gen-cta:hover{transform:translateY(-1px);box-shadow:0 9px 22px -8px rgba(211,154,76,.75)}
+  #filterToggle{display:none}
+
+  /* ===== Layout ===== */
+  .wrap{max-width:1320px;margin:0 auto;padding:24px 28px 80px;display:grid;grid-template-columns:288px 1fr;gap:30px;align-items:start}
+
+  aside{position:sticky;top:78px;max-height:calc(100vh - 96px);overflow-y:auto;padding-right:6px}
+  aside::-webkit-scrollbar{width:8px}
+  aside::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+  .fgroup{border-bottom:1px solid var(--line-soft);padding:6px 0 16px;margin-bottom:6px}
+  .fgroup > summary{
+    list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 2px;font-family:"Space Mono",monospace;font-size:11.5px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-soft);user-select:none;
+  }
+  .fgroup > summary::-webkit-details-marker{display:none}
+  .fgroup > summary:hover{color:var(--ink)}
+  .fgroup .chev{transition:transform .2s;stroke:var(--ink-faint);width:14px;height:14px}
+  .fgroup[open] .chev{transform:rotate(180deg)}
+  .fgroup .gcount{font-size:10px;color:var(--gold);margin-left:auto;margin-right:8px}
+  .chips{display:flex;flex-wrap:wrap;gap:7px;padding:4px 2px 2px}
+  .chip{
+    font-family:inherit;font-size:12.5px;cursor:pointer;
+    padding:6px 11px;border-radius:999px;border:1px solid var(--line);
+    background:var(--surface);color:var(--ink-soft);
+    display:inline-flex;align-items:center;gap:6px;
+    transition:all .15s;line-height:1.3;
+  }
+  .chip:hover{border-color:var(--gold-deep);color:var(--ink)}
+  .chip[aria-pressed="true"]{background:linear-gradient(180deg,var(--gold),var(--gold-deep));border-color:var(--gold-deep);color:#231a0f;font-weight:600}
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex:none}
+  .chip .n{font-family:"Space Mono",monospace;font-size:10px;opacity:.6}
+  .chip[aria-pressed="true"] .n{opacity:.8}
+
+  /* ===== Cards ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+  .card{
+    background:linear-gradient(180deg,var(--surface),var(--bg-2));
+    border:1px solid var(--line);border-radius:16px;
+    padding:20px 20px 16px;position:relative;overflow:hidden;
+    box-shadow:var(--shadow);transition:transform .2s, border-color .2s;
+    display:flex;flex-direction:column;
+  }
+  .card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--gold-deep),transparent 70%);opacity:.5}
+  .card:hover{transform:translateY(-3px);border-color:#4a3b2b}
+  .card.flash{animation:flash 1.6s ease}
+  @keyframes flash{0%,100%{box-shadow:var(--shadow)}20%{box-shadow:0 0 0 2px var(--gold), 0 18px 40px -18px rgba(211,154,76,.5)}}
+  .card.custom{border-color:#5a4a2e}
+  .card.custom::before{background:linear-gradient(90deg,var(--gold),transparent 55%);opacity:.95;height:4px}
+  .origem.is-custom{color:var(--gold)}
+  .rm-custom{margin-top:14px;font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.06em;color:var(--ink-faint);background:none;border:none;cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+  .rm-custom:hover{color:var(--p-apimentado)}
+  .card-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+  .origem{font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint)}
+  .metodo{font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.08em;color:var(--gold);text-align:right;white-space:nowrap}
+  .card h3{font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:23px;line-height:1.05;margin:0 0 12px;letter-spacing:-.01em}
+  .spec{display:flex;gap:8px;margin:0 0 5px;font-size:13px;align-items:baseline}
+  .spec .lab{font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-faint);min-width:64px;flex:none;padding-top:2px}
+  .spec .val{color:var(--ink);font-weight:500}
+  .spec .val.soft{color:var(--ink-soft);font-weight:400}
+  .perfis{display:flex;flex-wrap:wrap;gap:6px;margin:13px 0 2px}
+  .pf{font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;letter-spacing:.01em}
+  .pf .pdot{width:6px;height:6px;border-radius:50%}
+  details.recipe{margin-top:14px;border-top:1px dashed var(--line);padding-top:12px}
+  details.recipe summary{
+    list-style:none;cursor:pointer;font-family:"Space Mono",monospace;font-size:11px;
+    letter-spacing:.12em;text-transform:uppercase;color:var(--gold);display:flex;align-items:center;gap:7px;
+  }
+  details.recipe summary::-webkit-details-marker{display:none}
+  details.recipe summary .arr{transition:transform .2s;width:13px;height:13px;stroke:var(--gold)}
+  details.recipe[open] summary .arr{transform:rotate(90deg)}
+  .recipe-body{padding-top:12px}
+  .recipe-body .rh{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-faint);margin:10px 0 6px}
+  .recipe-body ul{margin:0;padding:0;list-style:none}
+  .recipe-body li{font-size:13.5px;color:var(--ink-soft);padding:3px 0 3px 16px;position:relative;line-height:1.4}
+  .recipe-body li::before{content:"";position:absolute;left:2px;top:11px;width:5px;height:5px;border-radius:50%;background:var(--gold-deep)}
+  .recipe-body p{font-size:13.5px;color:var(--ink-soft);line-height:1.55;margin:0}
+  .recipe-body .copo{margin-top:10px;font-size:12.5px;color:var(--ink-faint);font-style:italic}
+  .recipe-body .balance-note{margin-top:12px;padding:9px 12px;border-radius:9px;background:color-mix(in srgb, var(--gold) 12%, transparent);border:1px solid #4a3b2b;font-size:12.5px;color:var(--ink-soft);line-height:1.45}
+  .recipe-body .balance-note b{color:var(--gold);font-weight:600}
+  .doce-badge{font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:#e3b35e;border:1px solid #5a4a2e;border-radius:999px;padding:3px 9px;display:inline-flex;align-items:center}
+
+  .empty{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--ink-faint)}
+  .empty .big{font-family:"Fraunces",serif;font-size:28px;color:var(--ink-soft);margin-bottom:8px}
+
+  footer{max-width:1320px;margin:0 auto;padding:30px 28px 60px;border-top:1px solid var(--line-soft);color:var(--ink-faint);font-size:13px;line-height:1.6}
+  footer b{color:var(--ink-soft)}
+
+  .activebar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:18px;min-height:1px}
+  .activebar .lab{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
+  .actv{font-size:12px;padding:5px 10px 5px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
+  .actv button{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:0}
+  .actv button:hover{color:var(--p-apimentado)}
+
+  @media(max-width:880px){
+    .wrap{grid-template-columns:1fr;gap:0}
+    aside{position:fixed;inset:0 0 0 auto;width:min(340px,86vw);background:var(--bg-2);z-index:50;
+      max-height:100vh;padding:20px 20px 60px;border-left:1px solid var(--line);
+      transform:translateX(100%);transition:transform .28s ease;box-shadow:-30px 0 60px -30px rgba(0,0,0,.7)}
+    body.filters-open aside{transform:translateX(0)}
+    body.filters-open::after{content:"";position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:40}
+    #filterToggle{display:inline-flex}
+    .aside-close{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .aside-close .tbtn{padding:8px 12px}
+  }
+  @media(min-width:881px){.aside-close{display:none}}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="index.html" class="on">Carta · 80 drinks</a>
+  <a href="gerador.html" class="cta">Gerador de drinks ›</a>
+  <span class="sep"></span>
+  <span class="brand">Drinks Manir</span>
+</nav>
+
+<header>
+  <p class="kicker">Carta autoral · adega de casa</p>
+  <h1>Drinks <em>Manir</em></h1>
+  <p class="lede">Sua coleção de <b>80 receitas</b> em uma carta filtrável. Marque o que te apetece agora — <b>destilado, extrato, espuma, fruta predominante e perfil</b> — e a carta se reorganiza na hora.</p>
+</header>
+
+<div class="toolbar">
+  <div class="toolbar-in">
+    <label class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Buscar por nome ou ingrediente… (ex: maracujá, tequila, gengibre)" autocomplete="off">
+    </label>
+    <span class="count"><b id="num">80</b> / <span id="total">80</span> drinks</span>
+    <a class="tbtn accent gen-cta" href="gerador.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 9z"/><path d="M12 13v7"/><path d="M8 20h8"/></svg>
+      Criar meu drink
+    </a>
+    <button class="tbtn ghost" id="clear">Limpar</button>
+    <button class="tbtn" id="filterToggle">Filtros</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <aside id="aside">
+    <div class="aside-close">
+      <span class="kicker" style="margin:0">Filtros</span>
+      <button class="tbtn" id="asideClose">Fechar</button>
+    </div>
+    <div id="filters"></div>
+  </aside>
+
+  <main>
+    <div class="activebar" id="activebar"></div>
+    <div class="grid" id="grid"></div>
+  </main>
+</div>
+
+<footer>
+  <b>Drinks Manir</b> — carta gerada a partir das suas 5 coletâneas de receitas (Cardápio Sour, Caju &amp; Manga, Espumas Especiais, Cardápio Bananinha e Linha GS Sabores).<br>
+  Filtros combinam por <b>E</b> entre categorias e por <b>OU</b> dentro de cada categoria. Tudo roda offline no seu navegador — nenhum dado sai daqui.
+</footer>
+
+<script>
+/* ============ BASE DE DADOS — 80 DRINKS ============ */
+const D = [
+{"n":"Banana Citrus Sour","o":"Cardápio Sour","des":["Bananinha"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Banana","Laranja"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["40 ml de bananinha","30 ml de suco de limão tahiti","20 ml de suco de laranja natural","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake sem gelo, depois bata com gelo. Coe para copo baixo. Decore com rodela de laranja ou limão.","copo":"Copo baixo"},
+{"n":"Banana & Mango Sour","o":"Cardápio Sour","des":["Bananinha","Licor de Manga"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Banana","Manga","Maracujá"],"pf":["Sour","Cítrico","Tropical","Frutado"],"met":"Batido","clara":true,"ing":["30 ml de bananinha","15 ml de licor cremoso de manga","30 ml de suco de limão tahiti","10 ml de suco de maracujá sem açúcar","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake sem gelo, depois com gelo. Coe para taça coupe ou copo baixo. Sementes de maracujá sobre a espuma.","copo":"Taça coupe"},
+{"n":"Mango Passion Sour","o":"Cardápio Sour","des":["Licor de Manga","Cachaça","Vodka"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga","Maracujá"],"pf":["Sour","Cítrico","Tropical"],"met":"Batido","clara":false,"ing":["35 ml de licor cremoso de manga","25 ml de cachaça branca ou vodka","30 ml de suco de limão tahiti","15 ml de suco de maracujá sem açúcar","5–6 cubos de gelo"],"pre":"Bata tudo com gelo 10–12s. Coe para copo baixo com gelo ou taça sem gelo. Fatia fina de limão.","copo":"Copo baixo"},
+{"n":"Tropical Banana Sour","o":"Cardápio Sour","des":["Bananinha","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Abacaxi"],"pf":["Sour","Tropical","Frutado"],"met":"Batido","clara":false,"ing":["35 ml de bananinha","20 ml de rum branco","30 ml de suco de limão tahiti","20 ml de suco de abacaxi natural","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo com gelo. Decore com fatia de abacaxi.","copo":"Copo baixo"},
+{"n":"Sicilian Banana Sour","o":"Cardápio Sour","des":["Bananinha"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Limão Siciliano"],"pf":["Sour","Cítrico"],"met":"Batido","clara":false,"ing":["35 ml de bananinha","30 ml de suco de limão siciliano","15 ml de suco de laranja natural","2–3 gotas de bitter aromático (opcional)","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo com gelo. Twist de casca de limão siciliano.","copo":"Copo baixo"},
+{"n":"Mango Citrus Sour","o":"Cardápio Sour","des":["Licor de Manga"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Manga","Laranja"],"pf":["Sour","Cítrico","Cremoso","Frutado"],"met":"Batido","clara":true,"ing":["40 ml de licor cremoso de manga","30 ml de suco de limão tahiti","15 ml de suco de laranja natural","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupe. Raspas de casca de laranja sobre a espuma.","copo":"Taça coupe"},
+{"n":"Limoncello Cream Sour","o":"Cardápio Sour","des":["Limoncello","Cachaça","Vodka"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Limão Siciliano"],"pf":["Sour","Cítrico","Cremoso"],"met":"Batido","clara":true,"ing":["35 ml de limoncello cremoso com creme de leite","30 ml de suco de limão siciliano","20 ml de cachaça branca ou vodka","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupe ou copo baixo sem gelo. Twist de limão siciliano.","copo":"Taça coupe"},
+{"n":"Citrus Trio Sour","o":"Cardápio Sour","des":["Bananinha","Licor de Manga","Limoncello"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Banana","Manga","Limão"],"pf":["Sour","Cítrico","Cremoso"],"met":"Batido","clara":true,"ing":["15 ml de bananinha","15 ml de licor cremoso de manga","15 ml de limoncello cremoso","30 ml de suco de limão tahiti","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupe. Tira pequena de casca de limão.","copo":"Taça coupe"},
+{"n":"Banana Ginger Sour","o":"Cardápio Sour","des":["Bananinha"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Gengibre"],"pf":["Sour","Cítrico","Apimentado"],"met":"Batido","clara":false,"ing":["35 ml de bananinha","30 ml de suco de limão tahiti","20 ml de ginger ale","2 lâminas finas de gengibre fresco","5–6 cubos de gelo"],"pre":"Macere o gengibre, adicione o resto e bata com gelo 10–12s. Coe para copo baixo com gelo. Rodela de limão.","copo":"Copo baixo"},
+{"n":"Mango Spice Sour","o":"Cardápio Sour","des":["Licor de Manga","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga"],"pf":["Sour","Apimentado","Tropical"],"met":"Batido","clara":false,"ing":["35 ml de licor cremoso de manga","20 ml de rum branco","30 ml de suco de limão tahiti","1 pitada leve de noz-moscada ou canela","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo ou taça coupe. Toque da mesma especiaria por cima.","copo":"Copo baixo"},
+{"n":"Don Luiz Sour","o":"Cardápio Sour","des":["Doce de Leite","Whisky/Bourbon","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Doce de Leite","Limão Siciliano"],"pf":["Sour","Cremoso","Doce"],"met":"Batido","clara":true,"ing":["35 ml de licor de doce de leite Don Luiz","25 ml de uísque bourbon ou rum envelhecido","30 ml de suco de limão siciliano","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para copo baixo. Twist de casca de limão siciliano.","copo":"Copo baixo"},
+{"n":"Don Luiz Coffee Sour","o":"Cardápio Sour","des":["Doce de Leite","Vodka","Cachaça"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Doce de Leite","Café"],"pf":["Sour","Cremoso","Doce"],"met":"Batido","clara":false,"ing":["35 ml de licor de doce de leite Don Luiz","20 ml de vodka ou cachaça neutra","25 ml de café coado forte, frio","25 ml de suco de limão tahiti","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo com gelo.","copo":"Copo baixo"},
+{"n":"Don Luiz Banana Sour","o":"Cardápio Sour","des":["Doce de Leite","Bananinha"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Banana","Doce de Leite"],"pf":["Sour","Cremoso","Doce"],"met":"Batido","clara":true,"ing":["25 ml de licor de doce de leite Don Luiz","20 ml de bananinha","30 ml de suco de limão tahiti","15 ml de suco de laranja natural","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupe. Raspas de casca de laranja.","copo":"Taça coupe"},
+{"n":"Salted Dulce Sour","o":"Cardápio Sour","des":["Doce de Leite","Whisky/Bourbon","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Doce de Leite"],"pf":["Sour","Cremoso","Doce"],"met":"Batido","clara":false,"ing":["35 ml de licor de doce de leite Don Luiz","25 ml de uísque bourbon ou rum dourado","30 ml de suco de limão siciliano ou tahiti","1 pequena pitada de sal","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo com gelo. Casca de limão ou laranja torcida.","copo":"Copo baixo"},
+{"n":"Caju & Manga Tonic","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Sem espuma"],"fru":["Caju","Manga"],"pf":["Cítrico","Refrescante","Frutado","Amargo"],"met":"Montado","clara":false,"ing":["40 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","25 ml de suco de limão","Água tônica ou água com gás","Gelo"],"pre":"Bata gin, caju, manga e limão com gelo. Coe para copo com gelo e complete com tônica. Casca de limão ou fatia de manga.","copo":"Copo alto"},
+{"n":"Caju & Manga Sour (com clara)","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["45 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","30 ml de suco de limão","1 clara de ovo","Bitter aromático (opcional)"],"pre":"Bata sem gelo, depois com gelo. Coe sem gelo. Finalize com bitter.","copo":"Copo baixo"},
+{"n":"Caju & Manga Sour com Suco de Maçã","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga","Maçã"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["45 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","30 ml de suco de limão","30–40 ml de suco de maçã","1 clara de ovo"],"pre":"Bata sem gelo, depois com gelo. Coe para copo baixo. Decore com bitter ou raspas.","copo":"Copo baixo"},
+{"n":"Caju & Manga Sour com Melão","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga","Melão"],"pf":["Sour","Frutado"],"met":"Batido","clara":true,"ing":["45 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","30 ml de suco de limão","40 ml de suco de maçã","40 ml de suco de melão","1 clara de ovo"],"pre":"Bata sem gelo, depois com gelo. Coe sem gelo. Finalize com bitter ou raspas de limão.","copo":"Copo baixo"},
+{"n":"Caju & Mango Sour com Uva Verde","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga","Uva Verde"],"pf":["Sour","Frutado"],"met":"Batido","clara":true,"ing":["45 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","30 ml de suco de limão","40 ml de suco de maçã","30–40 ml de suco de uva verde","1 clara de ovo","Micro pitada de sal (opcional)"],"pre":"Bata sem gelo, depois com gelo. Coe sem gelo e decore.","copo":"Copo baixo"},
+{"n":"Caju & Manga Citrus Sour","o":"Caju & Manga","des":["Gin","Licor de Manga"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga","Laranja"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["45 ml de gin","25 ml de extrato alcoólico de caju","15 ml de licor de manga","30 ml de suco de limão","40 ml de suco de caju","30 ml de suco de laranja","1 clara de ovo"],"pre":"Bata sem gelo, depois com gelo. Coe para copo baixo. Raspas de laranja ou bitter.","copo":"Copo baixo"},
+{"n":"Caju, Manga & Licor 43 Golden Sour","o":"Caju & Manga","des":["Gin","Licor de Manga","Licor 43"],"ext":["Extrato de Caju"],"esp":["Clara de ovo"],"fru":["Caju","Manga","Laranja"],"pf":["Sour","Cítrico","Frutado","Doce"],"met":"Batido","clara":true,"ing":["40 ml de gin","20 ml de extrato alcoólico de caju","15 ml de licor de manga","15 ml de Licor 43","30 ml de suco de limão","30 ml de suco de caju","15 ml de suco de laranja","1 clara de ovo"],"pre":"Bata sem gelo, depois com gelo. Coe para o copo. Raspas de laranja ou bitter.","copo":"Copo baixo"},
+{"n":"Gin & Pineapple Mint Highball","o":"Espumas Especiais","des":["Gin"],"ext":["Extrato de Abacaxi com Hortelã"],"esp":["Espuma de Limão"],"fru":["Abacaxi"],"pf":["Refrescante","Cítrico","Tropical"],"met":"Montado","clara":false,"ing":["50 ml de gin","70 ml de extrato de abacaxi com hortelã","20 ml de limão-siciliano","15–20 ml de suco de maçã","Água com gás para completar","Espuma de limão"],"pre":"Em copo alto monte extrato, maçã e limão. Adicione gin, gelo e complete com água com gás. Finalize com espuma de limão.","copo":"Copo alto"},
+{"n":"Red Velvet Vodka Sour","o":"Espumas Especiais","des":["Vodka"],"ext":["Cranberry (suco)"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Frutas Vermelhas","Cranberry"],"pf":["Sour","Frutado"],"met":"Batido","clara":true,"ing":["50 ml de vodka","30 ml de cranberry","20 ml de limão","20–30 ml de suco de maçã","1 clara de ovo","Espuma de frutas vermelhas"],"pre":"Dry shake 10s, depois com gelo 12s. Coe para copo baixo com gelo fresco. Espuma de frutas vermelhas.","copo":"Copo baixo"},
+{"n":"Tangerine Whiskey Smash","o":"Espumas Especiais","des":["Whisky/Bourbon"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Gengibre"],"fru":["Tangerina"],"pf":["Cítrico","Frutado","Apimentado"],"met":"Batido","clara":false,"ing":["60 ml de whiskey","2 gomos de tangerina macerados","20 ml de suco de maçã","10 ml de limão","Espuma de gengibre"],"pre":"Macere a tangerina, adicione o resto e bata rápido com gelo. Sirva em copo baixo com gelo. Espuma de gengibre.","copo":"Copo baixo"},
+{"n":"Green Apple Gin Twist","o":"Espumas Especiais","des":["Gin"],"ext":["Extrato de Maçã Verde"],"esp":["Espuma de Maçã Verde"],"fru":["Maçã Verde"],"pf":["Cítrico","Frutado"],"met":"Batido","clara":false,"ing":["50 ml de gin","40 ml de extrato de maçã verde","15 ml de Cointreau","10 ml de limão-siciliano","15 ml de suco de maçã","Espuma de maçã verde"],"pre":"Bata tudo com gelo 10s. Coe para copo baixo ou taça martini. Espuma de maçã verde.","copo":"Taça martini"},
+{"n":"Blue Mango Cooler","o":"Espumas Especiais","des":["Vodka","Curaçau Blue","Licor de Manga"],"ext":["Extrato de Abacaxi com Hortelã"],"esp":["Espuma de Tangerina"],"fru":["Manga","Abacaxi"],"pf":["Cítrico","Tropical","Refrescante"],"met":"Batido","clara":false,"ing":["40 ml de vodka","15 ml de licor de manga","15 ml de curaçao blue","30 ml de limão","40–50 ml de extrato de abacaxi com hortelã","15 ml de suco de maçã","15 ml de suco de limão tahiti","Espuma de tangerina"],"pre":"Bata tudo com gelo 10–12s. Sirva em copo longo com gelo. Espuma de tangerina.","copo":"Copo longo"},
+{"n":"Green Grape Gin Sour","o":"Espumas Especiais","des":["Gin"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Maçã Verde"],"fru":["Uva Verde"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["50 ml de gin","8 uvas verdes maceradas","20 ml de limão-siciliano","20–30 ml de suco de maçã","1 clara de ovo","Espuma de maçã verde"],"pre":"Macere as uvas, adicione gin, maçã, limão e clara. Dry shake, depois com gelo. Coe. Espuma de maçã verde.","copo":"Copo baixo"},
+{"n":"Melon & 43 Spritz","o":"Espumas Especiais","des":["Licor 43"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Tangerina"],"fru":["Melão"],"pf":["Refrescante","Cítrico","Doce"],"met":"Montado","clara":false,"ing":["35 ml de Licor 43","80 ml de suco de melão fresco","20 ml de limão","Água com gás para completar","Espuma de tangerina"],"pre":"Misture melão, Licor 43 e limão no copo com gelo. Complete com água com gás. Cubra com espuma de tangerina.","copo":"Taça"},
+{"n":"Uva Verde Collins","o":"Espumas Especiais","des":["Vodka","Gin"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Limão Siciliano"],"fru":["Uva Verde"],"pf":["Refrescante","Cítrico"],"met":"Montado","clara":false,"ing":["50 ml de vodka ou gin","6 uvas verdes maceradas","40 ml de suco de maçã","15 ml de limão","Água com gás","Espuma de limão-siciliano"],"pre":"Macere as uvas no copo, adicione o resto e gelo até o topo. Complete com água com gás. Espuma de limão-siciliano.","copo":"Copo alto"},
+{"n":"Melon Whiskey Cooler","o":"Espumas Especiais","des":["Whisky/Bourbon"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Gengibre"],"fru":["Melão"],"pf":["Frutado","Refrescante","Apimentado"],"met":"Batido","clara":false,"ing":["60 ml de whiskey","60 ml de suco de melão","20 ml de suco de maçã","10 ml de limão","Espuma de gengibre"],"pre":"Bata os líquidos com gelo 8s. Sirva em copo baixo com gelo. Espuma de gengibre.","copo":"Copo baixo"},
+{"n":"43 Tropical Sunset","o":"Espumas Especiais","des":["Licor 43","Vodka"],"ext":["Extrato de Abacaxi com Hortelã"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Abacaxi"],"pf":["Tropical","Frutado","Doce"],"met":"Batido","clara":false,"ing":["25 ml de Licor 43","40 ml de vodka","40 ml de extrato de abacaxi com hortelã","20 ml de suco de maçã","25 ml de limão","Espuma de frutas vermelhas"],"pre":"Bata os líquidos com gelo 10s. Sirva em taça ou copo alto. Espuma de frutas vermelhas.","copo":"Taça"},
+{"n":"Apple-Melon Fizz","o":"Espumas Especiais","des":["Gin"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Maçã Verde"],"fru":["Maçã","Melão"],"pf":["Refrescante","Frutado"],"met":"Montado","clara":false,"ing":["40 ml de gin","40 ml de suco de maçã","60 ml de suco de melão","10 ml de limão","Água com gás","Espuma de maçã verde"],"pre":"Misture gin, maçã, melão e limão no copo com gelo. Complete com água com gás. Espuma de maçã verde.","copo":"Copo alto"},
+{"n":"Blue Grape Cooler","o":"Espumas Especiais","des":["Vodka","Curaçau Blue"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Tangerina"],"fru":["Uva Verde"],"pf":["Refrescante","Cítrico"],"met":"Montado","clara":false,"ing":["40 ml de vodka","15 ml de curaçao blue","8 uvas verdes maceradas","20 ml de limão","30 ml de suco de maçã","Água com gás","Espuma de tangerina"],"pre":"Macere as uvas, adicione o resto e gelo. Complete com água com gás. Espuma de tangerina.","copo":"Copo alto"},
+{"n":"43 Apple Cream Sour","o":"Espumas Especiais","des":["Licor 43","Vodka"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Limão Siciliano"],"fru":["Maçã"],"pf":["Sour","Cremoso","Cítrico","Doce"],"met":"Batido","clara":true,"ing":["35 ml de Licor 43","20 ml de vodka","30 ml de suco de maçã","20 ml de limão","1 clara de ovo","Espuma de limão-siciliano"],"pre":"Dry shake 10s, depois com gelo. Coe em taça. Espuma de limão-siciliano.","copo":"Taça"},
+{"n":"Melon Gin Punch","o":"Espumas Especiais","des":["Gin"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Melão"],"pf":["Frutado","Refrescante"],"met":"Batido","clara":false,"ing":["50 ml de gin","70 ml de suco de melão","20 ml de limão","20 ml de suco de maçã","Espuma de frutas vermelhas"],"pre":"Bata os líquidos com gelo 10s. Sirva em copo longo. Espuma de frutas vermelhas.","copo":"Copo longo"},
+{"n":"Pineapple Grape Highball","o":"Espumas Especiais","des":["Vodka"],"ext":["Extrato de Abacaxi com Hortelã"],"esp":["Espuma de Limão"],"fru":["Abacaxi","Uva Verde"],"pf":["Refrescante","Tropical"],"met":"Montado","clara":false,"ing":["50 ml de vodka","60 ml de extrato de abacaxi com hortelã","6 uvas verdes maceradas","20 ml de suco de maçã","Água com gás","Espuma de limão"],"pre":"Macere as uvas, adicione vodka, extrato e maçã. Gelo até o topo, complete com água com gás. Espuma de limão.","copo":"Copo alto"},
+{"n":"Manga & Banana Colada","o":"Cardápio Bananinha","des":["Bananinha","Licor de Manga"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga","Banana","Abacaxi"],"pf":["Cremoso","Tropical","Doce"],"met":"Liquidificador","clara":false,"ing":["30 ml de bananinha","30 ml de licor cremoso de manga","40 ml de leite de coco","50 ml de suco de abacaxi natural","6–8 cubos de gelo"],"pre":"Bata tudo no liquidificador até textura de frozen. Sirva em copo alto. Decore com fatia de abacaxi.","copo":"Copo alto"},
+{"n":"Banana Limoncello Sour","o":"Cardápio Bananinha","des":["Bananinha","Limoncello"],"ext":["Sem extrato (sucos naturais)"],"esp":["Clara de ovo"],"fru":["Banana","Limão Siciliano"],"pf":["Sour","Cítrico","Cremoso"],"met":"Batido","clara":true,"ing":["30 ml de bananinha","20 ml de limoncello cremoso","30 ml de suco de limão siciliano (ou 20 ml tahiti)","1 clara de ovo (opcional)","5–6 cubos de gelo"],"pre":"Dry shake, depois com gelo. Coe para copo baixo. Twist de casca de limão.","copo":"Copo baixo"},
+{"n":"Tropical Cream Dream","o":"Cardápio Bananinha","des":["Licor de Manga","Vodka","Cachaça"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga","Maracujá"],"pf":["Cremoso","Tropical"],"met":"Batido","clara":false,"ing":["40 ml de licor cremoso de manga","30 ml de vodka ou cachaça neutra","25 ml de suco de maracujá concentrado sem açúcar","5–6 cubos de gelo"],"pre":"Bata tudo com gelo 10–15s. Coe para taça martini ou coupe gelada.","copo":"Taça martini"},
+{"n":"Bananinha Limoncello Fizz","o":"Cardápio Bananinha","des":["Bananinha","Limoncello"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Limão"],"pf":["Refrescante","Cítrico","Cremoso"],"met":"Montado","clara":false,"ing":["20 ml de bananinha","20 ml de limoncello cremoso","25 ml de suco de limão tahiti","80 ml de água com gás bem gelada","5–6 cubos de gelo"],"pre":"Bata bananinha, limoncello e limão com gelo 8–10s. Coe para copo alto com gelo novo. Complete com água com gás.","copo":"Copo alto"},
+{"n":"Banana & Mango Sunset","o":"Cardápio Bananinha","des":["Bananinha","Licor de Manga"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Manga","Laranja"],"pf":["Frutado","Tropical","Cítrico"],"met":"Batido","clara":false,"ing":["25 ml de bananinha","25 ml de licor cremoso de manga","55 ml de suco de laranja natural","20 ml de suco de limão tahiti","5–6 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe em copo alto com gelo. Reserve 20 ml de laranja e despeje por cima para o efeito sunset.","copo":"Copo alto"},
+{"n":"Crema di Mango Limoncello","o":"Cardápio Bananinha","des":["Licor de Manga","Limoncello"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga","Limão Siciliano"],"pf":["Cremoso","Cítrico"],"met":"Batido","clara":false,"ing":["30 ml de licor cremoso de manga","20 ml de limoncello cremoso","30 ml de suco de limão siciliano","4–5 cubos de gelo","Casca de limão para aromatizar"],"pre":"Bata com gelo 10–12s. Coe para taça coupe pequena. Torça casca de limão sobre o drink.","copo":"Taça coupe"},
+{"n":"Banana Split Martini","o":"Cardápio Bananinha","des":["Bananinha","Licor de Manga","Vodka","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Manga"],"pf":["Cremoso","Doce"],"met":"Batido","clara":false,"ing":["25 ml de bananinha","20 ml de licor cremoso de manga","20 ml de vodka ou rum branco","25 ml de creme de leite fresco","20 ml de suco de limão tahiti","5–6 cubos de gelo"],"pre":"Bata vigorosamente com gelo 12–15s. Coe para taça martini gelada.","copo":"Taça martini"},
+{"n":"Manga Mule Cremoso","o":"Cardápio Bananinha","des":["Licor de Manga","Cachaça","Vodka"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Manga","Gengibre"],"pf":["Cremoso","Apimentado","Refrescante"],"met":"Montado","clara":false,"ing":["35 ml de licor cremoso de manga","30 ml de cachaça branca ou vodka","25 ml de suco de limão tahiti","80 ml de ginger ale","5–6 cubos de gelo"],"pre":"Em copo alto ou caneca com gelo, monte os destilados e o limão. Complete com ginger ale. Rodela de limão.","copo":"Caneca de cobre"},
+{"n":"Banana Cream Shake","o":"Cardápio Bananinha","des":["Bananinha","Limoncello"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Laranja"],"pf":["Cremoso","Doce"],"met":"Liquidificador","clara":false,"ing":["30 ml de bananinha","20 ml de limoncello cremoso","40 ml de leite integral ou bebida vegetal","30 ml de suco de laranja natural","15 ml de suco de limão tahiti","30–40 g de banana","5–6 cubos de gelo"],"pre":"Bata tudo no liquidificador até cremoso e homogêneo. Ajuste a acidez com mais limão se ficar doce.","copo":"Copo alto"},
+{"n":"Bananinha Cream Spritz","o":"Cardápio Bananinha","des":["Bananinha","Limoncello","Espumante"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Limão Siciliano"],"pf":["Refrescante","Cremoso"],"met":"Montado","clara":false,"ing":["20 ml de bananinha","20 ml de limoncello cremoso","80 ml de espumante brut ou vinho branco seco gelado","60–80 ml de água com gás","1 rodela de limão siciliano","4–5 cubos de gelo"],"pre":"Em taça de vinho com gelo, monte bananinha e limoncello. Complete com espumante e água com gás. Mexa de leve.","copo":"Taça de vinho"},
+{"n":"Dulce de Leite Espresso Martini","o":"Cardápio Bananinha","des":["Doce de Leite","Vodka"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Doce de Leite","Café"],"pf":["Cremoso","Doce"],"met":"Batido","clara":false,"ing":["35 ml de licor de doce de leite Don Luiz","30 ml de vodka","30 ml de café espresso forte, frio","10 ml de licor de café (opcional)","5–6 cubos de gelo"],"pre":"Bata vigorosamente com gelo 12–15s. Coe para taça martini gelada. Decore com 3 grãos de café.","copo":"Taça martini"},
+{"n":"Don Luiz Banana Caramel","o":"Cardápio Bananinha","des":["Doce de Leite","Bananinha","Rum","Whisky/Bourbon"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Banana","Doce de Leite"],"pf":["Cremoso","Doce","Apimentado"],"met":"Batido","clara":false,"ing":["30 ml de licor de doce de leite Don Luiz","20 ml de bananinha (destilado de banana)","20 ml de rum envelhecido ou uísque","30 ml de leite integral ou bebida vegetal","3–4 cubos de gelo"],"pre":"Bata com gelo 10–12s. Coe para copo baixo com 1–2 cubos. Polvilhe canela por cima.","copo":"Copo baixo"},
+{"n":"Don Luiz Churros Martini","o":"Cardápio Bananinha","des":["Doce de Leite","Vodka","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Doce de Leite","Café"],"pf":["Cremoso","Doce","Apimentado"],"met":"Batido","clara":false,"ing":["35 ml de licor de doce de leite Don Luiz","30 ml de vodka ou rum branco","20 ml de creme de leite fresco","10 ml de café coado forte, frio","1 pitada de canela em pó","5–6 cubos de gelo"],"pre":"Bata vigorosamente com gelo 12–15s. Coe para taça martini gelada. Polvilhe canela na superfície.","copo":"Taça martini"},
+{"n":"Don Luiz Salted Caramel Highball","o":"Cardápio Bananinha","des":["Doce de Leite","Whisky/Bourbon","Rum"],"ext":["Sem extrato (sucos naturais)"],"esp":["Sem espuma"],"fru":["Doce de Leite"],"pf":["Doce","Refrescante"],"met":"Montado","clara":false,"ing":["35 ml de licor de doce de leite Don Luiz","30 ml de uísque bourbon ou rum dourado","20 ml de suco de limão siciliano ou tahiti","1 pequena pitada de sal","80–100 ml de água com gás gelada","5–6 cubos de gelo"],"pre":"Bata doce de leite, uísque, limão e sal com gelo 8–10s. Coe para copo alto com gelo novo. Complete com água com gás.","copo":"Copo alto"},
+{"n":"Maçã Verde Cream Pie","o":"Linha GS Sabores","des":["Baileys","Doce de Leite"],"ext":["GS Maçã Verde"],"esp":["Espuma de Maçã Verde"],"fru":["Maçã Verde"],"pf":["Cremoso","Frutado","Doce"],"met":"Batido","clara":false,"ing":["20 ml Baileys","15 ml licor de doce de leite Don Luiz","30 ml preparado GS Maçã Verde","20 ml leite ou creme de leite","3–4 cubos de gelo","Espuma GS Maçã Verde"],"pre":"Bata no shaker até cremoso. Coe para taça martini ou copo baixo. Espuma de maçã verde.","copo":"Taça martini","desc":"Cremoso e frutado, doce moderado, álcool discreto."},
+{"n":"Morango & Cream Shake","o":"Linha GS Sabores","des":["Licor de Morango","Baileys"],"ext":["GS Frutas Vermelhas","GS Cranberry"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Frutas Vermelhas"],"pf":["Cremoso","Doce","Frutado"],"met":"Liquidificador","clara":false,"ing":["20 ml licor de morango com tequila Balena","15 ml Baileys","50 ml leite","25 ml preparado GS Frutas Vermelhas ou Cranberry","3–4 morangos frescos","4–5 cubos de gelo","Espuma GS Morango ou Frutas Vermelhas"],"pre":"Bata tudo no liquidificador até cremoso. Sirva em copo alto. Espuma de morango.","copo":"Copo alto","desc":"Estilo milkshake alcoólico, leve e doce na medida."},
+{"n":"Banana & Doce de Leite Float","o":"Linha GS Sabores","des":["Bananinha","Doce de Leite","Baileys"],"ext":["Sem extrato (sucos naturais)"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Banana","Doce de Leite"],"pf":["Cremoso","Doce"],"met":"Batido","clara":false,"ing":["15 ml licor de bananinha com cachaça","15 ml licor de doce de leite Don Luiz","15 ml Baileys","40 ml leite","3–4 cubos de gelo","Espuma GS Frutas Vermelhas"],"pre":"Bata vigorosamente no shaker. Coe para copo baixo com pouco gelo. Espuma de frutas vermelhas.","copo":"Copo baixo","desc":"Sobremesa líquida de banana, doce, mas leve no álcool."},
+{"n":"Citrus Cheesecake Cream","o":"Linha GS Sabores","des":["Baileys","Limoncello","Aperol"],"ext":["GS Limão Siciliano"],"esp":["Espuma de Limão Siciliano"],"fru":["Limão Siciliano"],"pf":["Cremoso","Cítrico","Amargo"],"met":"Batido","clara":false,"ing":["20 ml Baileys","20 ml limoncello cremoso","15 ml Aperol","25 ml preparado GS Limão Siciliano","15 ml de suco de limão tahiti","3–4 cubos de gelo","Espuma GS Limão Siciliano"],"pre":"Bata todos os líquidos com gelo. Coe para taça coupé. Espuma de limão siciliano e raspas por cima.","copo":"Taça coupé","desc":"Cremoso, cítrico, lembrando cheesecake de limão."},
+{"n":"Pink Cream Berries","o":"Linha GS Sabores","des":["Licor de Morango","Baileys"],"ext":["GS Cranberry"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Frutas Vermelhas","Cranberry"],"pf":["Cremoso","Frutado"],"met":"Batido","clara":false,"ing":["20 ml licor de morango com tequila Balena","15 ml Baileys","25 ml preparado GS Cranberry","30 ml leite","3–4 cubos de gelo","Espuma GS Frutas Vermelhas"],"pre":"Bata com gelo. Coe para copo baixo com gelo. Espuma de frutas vermelhas.","copo":"Copo baixo","desc":"Cremoso, frutado, com leve acidez."},
+{"n":"Irish Banana Split","o":"Linha GS Sabores","des":["Whisky/Bourbon","Baileys","Bananinha","Doce de Leite"],"ext":["GS Frutas Vermelhas"],"esp":["Espuma de Frutas Vermelhas"],"fru":["Banana","Frutas Vermelhas"],"pf":["Cremoso","Doce"],"met":"Batido","clara":false,"ing":["25 ml whisky Jack Daniel's","15 ml Baileys","15 ml licor de bananinha","15 ml licor de doce de leite","20 ml preparado GS Frutas Vermelhas","4 cubos de gelo","Espuma GS Morango ou Frutas Vermelhas"],"pre":"Bata tudo com gelo. Coe para copo alto com pouco gelo. Finalize com espuma e rodelas de banana no espeto.","copo":"Copo alto","desc":"Lembra banana split em versão drink, porém suave."},
+{"n":"Caramel Maçã Verde Latte","o":"Linha GS Sabores","des":["Baileys","Doce de Leite"],"ext":["GS Maçã Verde"],"esp":["Espuma de Maçã Verde"],"fru":["Maçã Verde","Doce de Leite"],"pf":["Cremoso","Doce"],"met":"Batido","clara":false,"ing":["20 ml Baileys","15 ml licor de doce de leite","30 ml preparado GS Maçã Verde","40 ml leite","4 cubos de gelo","Espuma GS Maçã Verde"],"pre":"Bata com gelo. Coe para copo baixo com gelo. Espuma de maçã verde e fatia de maçã (canela opcional).","copo":"Copo baixo","desc":"Tipo latte gelado de maçã caramelizada."},
+{"n":"Creamy Ginger Spice","o":"Linha GS Sabores","des":["Conhaque de Gengibre","Baileys","Doce de Leite"],"ext":["GS Gengibre"],"esp":["Espuma de Gengibre"],"fru":["Gengibre"],"pf":["Cremoso","Apimentado","Doce"],"met":"Batido","clara":false,"ing":["25 ml conhaque de gengibre","15 ml Baileys","15 ml licor de doce de leite","25 ml preparado GS Gengibre (ou 20 ml Gengibre + 10 ml Abacaxi & Hortelã)","3–4 cubos de gelo","Espuma GS Gengibre"],"pre":"Bata tudo com gelo. Coe para copo baixo. Espuma de gengibre e lâmina de gengibre.","copo":"Copo baixo","desc":"Cremoso, com toque quente de gengibre."},
+{"n":"Creamy Orange Sunset","o":"Linha GS Sabores","des":["Baileys","Aperol"],"ext":["GS Tangerina"],"esp":["Espuma de Tangerina","Espuma de Limão Siciliano"],"fru":["Tangerina"],"pf":["Cremoso","Cítrico","Amargo"],"met":"Batido","clara":false,"ing":["20 ml Baileys","20 ml Aperol","15 ml Cointreau","30 ml preparado GS Tangerina","15 ml de suco de limão tahiti","3–4 cubos de gelo","Espuma GS Tangerina ou Limão Siciliano"],"pre":"Bata todos os líquidos com gelo. Coe para taça. Espuma e twist de casca de laranja.","copo":"Taça coupé","desc":"Cremoso, cítrico, com leve amargor."},
+{"n":"Elderflower Cream Garden","o":"Linha GS Sabores","des":["St-Germain","Baileys","Limoncello"],"ext":["GS Limão Siciliano"],"esp":["Espuma de Limão Siciliano","Espuma de Frutas Vermelhas"],"fru":["Limão Siciliano"],"pf":["Cremoso","Floral","Cítrico"],"met":"Batido","clara":false,"ing":["20 ml St-Germain (licor de sabugueiro)","15 ml Baileys","15 ml limoncello cremoso","25 ml preparado GS Limão Siciliano","15 ml de suco de limão tahiti","3–4 cubos de gelo","Espuma GS Limão Siciliano ou Frutas Vermelhas"],"pre":"Bata todos os líquidos com gelo. Coe para taça martini. Finalize com espuma e rodela fina de limão.","copo":"Taça martini","desc":"Floral, delicado e cremoso."},
+{"n":"Siciliano Spritz Gourmet","o":"Linha GS Sabores","des":["Aperol"],"ext":["GS Limão Siciliano"],"esp":["Espuma de Limão Siciliano"],"fru":["Limão Siciliano","Laranja"],"pf":["Cítrico","Refrescante","Amargo"],"met":"Montado","clara":false,"ing":["25 ml Aperol","15 ml Cointreau","40 ml preparado GS Limão Siciliano","60–80 ml água com gás ou soda limão","15 ml de suco de limão tahiti","Gelo até completar","Espuma GS Limão Siciliano"],"pre":"Em taça grande com gelo, monte Aperol, Cointreau e limão. Complete com água com gás. Espuma de limão siciliano.","copo":"Taça de vinho","desc":"Spritz leve, refrescante, baixa graduação alcoólica."},
+{"n":"Pink Citrus Refresco","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Pink Lemonade","GS Cranberry"],"esp":["Espuma de Frutas Vermelhas","Espuma de Limão Siciliano"],"fru":["Pink Lemonade","Cranberry"],"pf":["Cítrico","Frutado","Refrescante"],"met":"Batido","clara":false,"ing":["30 ml tequila Don Julio","30 ml preparado GS Pink Lemonade","20 ml preparado GS Cranberry","15 ml suco de limão fresco (opcional)","Gelo","Espuma GS Frutas Vermelhas ou Limão Siciliano"],"pre":"Bata com gelo. Coe para copo alto com gelo. Espuma, rodela de limão e meio morango.","copo":"Copo alto","desc":"Cítrico, levemente doce, cor rosa."},
+{"n":"Tangerina Highball","o":"Linha GS Sabores","des":["Whisky/Bourbon"],"ext":["GS Tangerina"],"esp":["Espuma de Tangerina"],"fru":["Tangerina"],"pf":["Cítrico","Refrescante"],"met":"Montado","clara":false,"ing":["30 ml whisky Jack Daniel's","45 ml preparado GS Tangerina","15 ml Cointreau","Água com gás ou soda para completar","15 ml de suco de limão tahiti","Gelo","Espuma GS Tangerina"],"pre":"Em copo alto com gelo, monte whisky, tangerina e Cointreau. Complete com água com gás. Espuma de tangerina.","copo":"Copo highball","desc":"Drink longo, perfeito para calor."},
+{"n":"Abacaxi & Hortelã Mule","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Abacaxi & Hortelã","GS Gengibre"],"esp":["Espuma de Gengibre"],"fru":["Abacaxi","Gengibre"],"pf":["Refrescante","Cítrico","Apimentado","Tropical"],"met":"Batido","clara":false,"ing":["30 ml tequila Don Julio","40 ml preparado GS Abacaxi & Hortelã","20 ml preparado GS Gengibre","15 ml suco de limão","Água com gás (opcional)","Gelo","Espuma GS Gengibre"],"pre":"Bata com gelo. Coe para copo alto ou caneca mule com gelo. Espuma de gengibre, rodela de limão e hortelã.","copo":"Caneca mule","desc":"Refrescante, com toque de gengibre, pouco alcoólico."},
+{"n":"Blue Citrus Cooler","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Blue Curaçau","GS Limão Siciliano"],"esp":["Espuma de Limão Siciliano","Espuma de Maçã Verde"],"fru":["Limão Siciliano"],"pf":["Cítrico","Refrescante"],"met":"Batido","clara":false,"ing":["15 ml Cointreau","25 ml tequila Don Julio","25 ml preparado GS Blue Curaçau","30 ml preparado GS Limão Siciliano","15 ml de suco de limão tahiti","Gelo","Espuma GS Limão Siciliano ou Maçã Verde"],"pre":"Bata com gelo. Coe para copo alto com gelo. Espuma, rodela de limão e borda de açúcar (opcional).","copo":"Copo alto","desc":"Colorido, cítrico, refrescante e leve."},
+{"n":"Cran-Ginger Collins","o":"Linha GS Sabores","des":["Conhaque de Gengibre"],"ext":["GS Cranberry","GS Gengibre"],"esp":["Espuma de Gengibre","Espuma de Frutas Vermelhas"],"fru":["Cranberry","Gengibre"],"pf":["Cítrico","Refrescante","Apimentado","Frutado"],"met":"Montado","clara":false,"ing":["30 ml conhaque de gengibre","40 ml preparado GS Cranberry","20 ml preparado GS Gengibre","15 ml suco de limão","Água com gás para completar","Gelo","Espuma GS Gengibre ou Frutas Vermelhas"],"pre":"Em copo alto com gelo, monte conhaque, cranberry e limão. Complete com água com gás. Espuma e fatia de limão.","copo":"Copo Collins","desc":"Azedinho, refrescante, leve picância do gengibre."},
+{"n":"Citrus Garden Spritz","o":"Linha GS Sabores","des":["St-Germain","Aperol"],"ext":["GS Limão Siciliano"],"esp":["Espuma de Limão Siciliano"],"fru":["Limão Siciliano"],"pf":["Cítrico","Floral","Refrescante","Amargo"],"met":"Montado","clara":false,"ing":["20 ml St-Germain","20 ml Aperol","40 ml preparado GS Limão Siciliano","60–80 ml água com gás ou soda","15 ml de suco de limão tahiti","Gelo","Espuma GS Limão Siciliano"],"pre":"Em taça com gelo, monte St-Germain, Aperol e limão. Complete com água com gás. Espuma, rodela de limão e hortelã.","copo":"Taça de vinho","desc":"Floral e cítrico, ideal para quem gosta de algo bem leve."},
+{"n":"Maçã Verde & Citrus Tonic","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Maçã Verde"],"esp":["Espuma de Maçã Verde"],"fru":["Maçã Verde"],"pf":["Cítrico","Frutado","Refrescante","Amargo"],"met":"Montado","clara":false,"ing":["30 ml tequila Don Julio","40 ml preparado GS Maçã Verde","15 ml suco de limão","Água tônica ou água com gás","Gelo","Espuma GS Maçã Verde"],"pre":"Em copo alto com gelo, monte tequila, maçã verde e limão. Complete com tônica. Espuma e fatia de maçã.","copo":"Copo alto","desc":"Frutado-cítrico, muito leve."},
+{"n":"Tangerina & Sabugueiro Fizz","o":"Linha GS Sabores","des":["St-Germain"],"ext":["GS Tangerina"],"esp":["Espuma de Tangerina"],"fru":["Tangerina"],"pf":["Cítrico","Floral","Refrescante"],"met":"Batido","clara":false,"ing":["20 ml St-Germain","15 ml Cointreau","40 ml preparado GS Tangerina","15 ml suco de limão","Água com gás para completar","Gelo","Espuma GS Tangerina"],"pre":"Bata St-Germain, Cointreau, tangerina e limão com gelo. Coe para copo alto com gelo. Complete com água com gás. Espuma.","copo":"Copo highball","desc":"Aromático, cítrico, suave."},
+{"n":"Citrus Jack Smash Light","o":"Linha GS Sabores","des":["Whisky/Bourbon"],"ext":["GS Limão Siciliano","GS Cranberry"],"esp":["Espuma de Limão Siciliano"],"fru":["Limão Siciliano","Cranberry"],"pf":["Cítrico","Frutado"],"met":"Batido","clara":false,"ing":["30 ml whisky Jack Daniel's","15 ml Cointreau","30 ml preparado GS Limão Siciliano","20 ml preparado GS Cranberry","15 ml de suco de limão tahiti","Gelo","Espuma GS Limão Siciliano"],"pre":"Bata tudo com gelo. Coe para copo baixo com gelo. Espuma e twist de casca de limão.","copo":"Copo baixo","desc":"Cítrico com whisky, mas bem suavizado."},
+{"n":"Siciliano Whisky Sour GS Light","o":"Linha GS Sabores","des":["Whisky/Bourbon"],"ext":["GS Limão Siciliano"],"esp":["Clara de ovo"],"fru":["Limão Siciliano"],"pf":["Sour","Cítrico"],"met":"Batido","clara":true,"ing":["35 ml whisky Jack Daniel's","25 ml preparado GS Limão Siciliano","15–20 ml suco de limão fresco","1 clara de ovo","Gelo"],"pre":"Dry shake para emulsionar a clara, depois com gelo. Coe para copo baixo. Gotas de cranberry sobre a espuma.","copo":"Copo baixo","desc":"Sour equilibrado, álcool discreto e acidez moderada."},
+{"n":"Tangerina Tequila Sour","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Tangerina"],"esp":["Clara de ovo"],"fru":["Tangerina"],"pf":["Sour","Cítrico","Frutado"],"met":"Batido","clara":true,"ing":["35 ml tequila Don Julio","30 ml preparado GS Tangerina","15 ml suco de limão","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupé. Zest de tangerina sobre a espuma.","copo":"Taça coupé","desc":"Sour frutado de tangerina, leve e refrescante."},
+{"n":"Maçã Verde Elder Sour","o":"Linha GS Sabores","des":["St-Germain","Tequila","Whisky/Bourbon"],"ext":["GS Maçã Verde"],"esp":["Clara de ovo"],"fru":["Maçã Verde"],"pf":["Sour","Floral","Frutado"],"met":"Batido","clara":true,"ing":["20 ml St-Germain","25 ml tequila Don Julio ou Jack Daniel's","30 ml preparado GS Maçã Verde","15–20 ml suco de limão","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para taça. Fatia fina de maçã sobre a espuma.","copo":"Taça coupé","desc":"Floral e frutado, com toque de maçã verde."},
+{"n":"Cranberry Jack Sour","o":"Linha GS Sabores","des":["Whisky/Bourbon"],"ext":["GS Cranberry"],"esp":["Clara de ovo"],"fru":["Cranberry"],"pf":["Sour","Frutado"],"met":"Batido","clara":true,"ing":["35 ml whisky Jack Daniel's","30 ml preparado GS Cranberry","15–20 ml suco de limão","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para copo baixo. Cereja decorando.","copo":"Copo baixo","desc":"Sour avermelhado, elegante, com whisky leve."},
+{"n":"Pink Elderflower Sour","o":"Linha GS Sabores","des":["St-Germain"],"ext":["GS Pink Lemonade","GS Cranberry"],"esp":["Clara de ovo"],"fru":["Pink Lemonade","Cranberry"],"pf":["Sour","Floral","Frutado"],"met":"Batido","clara":true,"ing":["25 ml St-Germain","25 ml preparado GS Pink Lemonade","15 ml suco de limão","20 ml preparado GS Cranberry","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para taça. Rodela fina de limão ou morango pequeno sobre a espuma.","copo":"Taça coupé","desc":"Floral, delicado, com leve acidez e cor rosada."},
+{"n":"Aperol Citrus Sour","o":"Linha GS Sabores","des":["Aperol"],"ext":["GS Limão Siciliano"],"esp":["Clara de ovo"],"fru":["Limão Siciliano","Laranja"],"pf":["Sour","Cítrico","Amargo"],"met":"Batido","clara":true,"ing":["25 ml Aperol","15 ml Cointreau","25 ml preparado GS Limão Siciliano","15 ml suco de limão","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para copo baixo ou taça. Twist de casca de laranja sobre a espuma.","copo":"Copo baixo","desc":"Sour cítrico com leve amargor do Aperol, bem suave."},
+{"n":"Conhaque de Gengibre Sour","o":"Linha GS Sabores","des":["Conhaque de Gengibre"],"ext":["GS Gengibre","GS Abacaxi & Hortelã"],"esp":["Clara de ovo"],"fru":["Gengibre"],"pf":["Sour","Apimentado"],"met":"Batido","clara":true,"ing":["35 ml conhaque de gengibre","25 ml preparado GS Gengibre","15–20 ml suco de limão","20 ml preparado GS Abacaxi & Hortelã (opcional)","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo vigorosamente. Coe para copo baixo. Lâmina de gengibre ou rodela de limão.","copo":"Copo baixo","desc":"Sour com toque quente e aromático de gengibre."},
+{"n":"Tequila Frutas Vermelhas Sour","o":"Linha GS Sabores","des":["Tequila"],"ext":["GS Frutas Vermelhas"],"esp":["Clara de ovo"],"fru":["Frutas Vermelhas"],"pf":["Sour","Frutado"],"met":"Batido","clara":true,"ing":["35 ml tequila Don Julio","30 ml preparado GS Frutas Vermelhas","15–20 ml suco de limão","1 clara de ovo","1 morango fresco amassado (opcional)","Gelo"],"pre":"Macere o morango (se usar), dry shake, depois com gelo. Dupla coagem para taça. Morango na borda.","copo":"Taça martini","desc":"Frutado, azedinho, muito fácil de beber."},
+{"n":"Blue Curaçau Sour","o":"Linha GS Sabores","des":["Tequila","Whisky/Bourbon"],"ext":["GS Blue Curaçau"],"esp":["Clara de ovo"],"fru":["Laranja"],"pf":["Sour","Cítrico"],"met":"Batido","clara":true,"ing":["20 ml Cointreau","25 ml tequila Don Julio ou Jack Daniel's","25 ml preparado GS Blue Curaçau","15–20 ml suco de limão","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para taça. Borda de açúcar e rodela de limão.","copo":"Taça martini","desc":"Visual marcante, cítrico e levemente doce."},
+{"n":"Limoncello Cream Sour","o":"Linha GS Sabores","des":["Limoncello"],"ext":["GS Limão Siciliano"],"esp":["Clara de ovo"],"fru":["Limão Siciliano"],"pf":["Sour","Cítrico","Cremoso"],"met":"Batido","clara":true,"ing":["20 ml limoncello cremoso","15 ml Cointreau","25 ml preparado GS Limão Siciliano","15 ml suco de limão (opcional)","1 clara de ovo","Gelo"],"pre":"Dry shake, depois com gelo. Coe para taça coupé. Raspas de limão sobre a espuma.","copo":"Taça coupé","desc":"Meio cremoso, meio sour, textura aveludada."}
+];
+
+/* ============ CONFIG DE FILTROS ============ */
+const FACETS = [
+  {key:"des", label:"Destilado / Base", open:true},
+  {key:"pf",  label:"Perfil", open:true, colors:true},
+  {key:"fruNat", label:"Fruta natural (fresca)", open:true},
+  {key:"fruExt", label:"Sabor de extrato / GS", open:true},
+  {key:"doceLevel", label:"Doçura", open:false, order:["Equilibrado","Doce","Bem doce"]},
+  {key:"esp", label:"Espuma", open:false},
+  {key:"met", label:"Método", open:false, single:true}
+];
+const PFCOLOR = {
+  "Cítrico":"--p-citrico","Sour":"--p-sour","Cremoso":"--p-cremoso","Apimentado":"--p-apimentado",
+  "Amargo":"--p-amargo","Floral":"--p-floral","Frutado":"--p-frutado","Tropical":"--p-tropical",
+  "Refrescante":"--p-refrescante","Doce":"--p-doce"
+};
+const PF_ORDER = ["Cítrico","Sour","Cremoso","Apimentado","Amargo","Floral","Frutado","Tropical","Refrescante","Doce"];
+
+const norm = s => s.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const state = {}; FACETS.forEach(f=>state[f.key]=new Set());
+let query = "";
+
+/* ============ DOÇURA — equilíbrio doce/ácido medido por volume (ml) ============ */
+const LIQDOCE = ["bananinha","destilado de banana","licor de manga","licor cremoso de manga","limoncello","doce de leite","baileys","licor 43","st-germain","sabugueiro","licor de morango","cointreau","curacao","curacau","licor de pistache","licor de melao","extrato de lichia"];
+const reAcid = /(suco de lim)|(\bde lim[ao]+\s+(tahiti|siciliano|fresco))/;
+const reSweetJuice = /suco de laranja|suco de abacaxi|suco de uva|suco de melao|suco de maca/;
+const mlOf = l => { const m=l.match(/^(\d+)(?:[–-](\d+))?\s*ml/); return m?(+m[1]+(m[2]?+m[2]:+m[1]))/2:0; };
+function annotateSweet(){
+  D.forEach(d=>{
+    let sv=0, av=0;
+    d.ing.forEach(l=>{ const t=norm(l); if(t.includes("opcional")) return; const v=mlOf(l);
+      if(t.includes("preparado gs")){ sv+=v*0.7; av+=v*0.3; }      // preparados GS são doce-ácidos
+      else if(LIQDOCE.some(m=>t.includes(m))||t.includes("xarope")) sv+=v;
+      else if(reSweetJuice.test(t)) sv+=v*0.5;
+      else if(reAcid.test(t)) av+=v;
+      else if(t.includes("maracuja")) av+=v*0.7;
+    });
+    const R = sv/Math.max(av,8);
+    d.doceLevel = R>3.2 ? "Bem doce" : R>1.9 ? "Doce" : "Equilibrado";
+  });
+}
+
+/* ============ FRUTA: separa o que vem de fruta real do que vem de extrato/GS ============ */
+function deriveFruits(){
+  D.forEach(d=>{
+    const nat=new Set(), ext=new Set();
+    d.ing.forEach(l=>{ const t=norm(l);
+      const isGS=t.includes("preparado gs"), isExt=/extrato (alcoolico )?de |extrato de /.test(t);
+      if(isGS||isExt){           // sabores que vêm de preparado GS ou extrato
+        if(/tangerina/.test(t)) ext.add("Tangerina");
+        if(/limao siciliano/.test(t)) ext.add("Limão Siciliano");
+        if(/cranberry/.test(t)) ext.add("Cranberry");
+        if(/maca verde/.test(t)) ext.add("Maçã Verde");
+        if(/abacaxi/.test(t)) ext.add("Abacaxi");
+        if(/gengibre/.test(t)) ext.add("Gengibre");
+        if(/pink lemonade/.test(t)) ext.add("Pink Lemonade");
+        if(/curacau|curacao/.test(t)) ext.add("Laranja");
+        if(/frutas vermelhas/.test(t)) ext.add("Frutas Vermelhas");
+        if(/caju/.test(t)) ext.add("Caju");
+        if(/lichia/.test(t)) ext.add("Lichia");
+      }
+      if(/suco de laranja/.test(t)) nat.add("Laranja");
+      if(/maracuja/.test(t)) nat.add("Maracujá");
+      if(/suco de abacaxi|abacaxi natural/.test(t)) nat.add("Abacaxi");
+      if(/uva verde|uvas verde|suco de uva/.test(t)) nat.add("Uva Verde");
+      if(/suco de melao|licor de melao/.test(t)) nat.add("Melão");
+      if(/morango/.test(t)) nat.add("Morango");
+      if(/suco de maca/.test(t)) nat.add("Maçã");
+      if(/gomos de tangerina|tangerina macerad/.test(t)) nat.add("Tangerina");
+      if(/suco de caju/.test(t)) nat.add("Caju");
+      if(/banan/.test(t)) nat.add("Banana");
+      if(/manga/.test(t)) nat.add("Manga");
+      if(/leite de coco/.test(t)) nat.add("Coco");
+      if(/cranberry/.test(t)&&!isGS) nat.add("Cranberry");
+      if(/cafe|espresso/.test(t)) nat.add("Café");
+      if(/doce de leite/.test(t)) nat.add("Doce de Leite");
+    });
+    d.fruNat=[...nat]; d.fruExt=[...ext];
+  });
+}
+
+/* contar ocorrências por valor */
+function counts(key){
+  const m={};
+  D.forEach(d=>{ const v=d[key]; (Array.isArray(v)?v:[v]).forEach(x=>m[x]=(m[x]||0)+1); });
+  return m;
+}
+
+/* ============ RENDER FILTROS ============ */
+function buildFilters(){
+  const host=document.getElementById("filters");
+  host.innerHTML="";
+  FACETS.forEach(f=>{
+    const c=counts(f.key);
+    let vals=Object.keys(c);
+    if(f.key==="pf") vals.sort((a,b)=>PF_ORDER.indexOf(a)-PF_ORDER.indexOf(b));
+    else if(f.order) vals.sort((a,b)=>f.order.indexOf(a)-f.order.indexOf(b));
+    else vals.sort((a,b)=> c[b]-c[a] || a.localeCompare(b,"pt"));
+    const det=document.createElement("details");
+    det.className="fgroup"; if(f.open) det.open=true;
+    det.innerHTML=`<summary>${f.label}<span class="gcount" data-g="${f.key}"></span>
+      <svg class="chev" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg></summary>`;
+    const wrap=document.createElement("div"); wrap.className="chips";
+    vals.forEach(v=>{
+      const b=document.createElement("button");
+      b.className="chip"; b.type="button"; b.setAttribute("aria-pressed","false");
+      b.dataset.key=f.key; b.dataset.val=v;
+      let dot="";
+      if(f.colors && PFCOLOR[v]) dot=`<span class="dot" style="background:var(${PFCOLOR[v]})"></span>`;
+      b.innerHTML=`${dot}${v} <span class="n">${c[v]}</span>`;
+      b.addEventListener("click",()=>{
+        if(f.single){ // método: troca exclusiva dentro do grupo
+          const was=state[f.key].has(v); state[f.key].clear(); if(!was) state[f.key].add(v);
+        } else {
+          state[f.key].has(v)?state[f.key].delete(v):state[f.key].add(v);
+        }
+        apply();
+      });
+      wrap.appendChild(b);
+    });
+    det.appendChild(wrap); host.appendChild(det);
+  });
+}
+
+/* ============ FILTRAGEM ============ */
+function matches(d){
+  for(const f of FACETS){
+    const sel=state[f.key]; if(!sel.size) continue;
+    const v=d[f.key]; const arr=Array.isArray(v)?v:[v];
+    let ok=false; for(const s of sel){ if(arr.includes(s)){ok=true;break;} }
+    if(!ok) return false;
+  }
+  if(query){
+    const hay=norm(d.n+" "+d.ing.join(" ")+" "+(d.fruNat||[]).join(" ")+" "+(d.fruExt||[]).join(" ")+" "+d.des.join(" ")+" "+(d.desc||""));
+    if(!hay.includes(query)) return false;
+  }
+  return true;
+}
+
+/* ============ RENDER CARDS ============ */
+const grid=document.getElementById("grid");
+function pfChip(v){
+  const col=PFCOLOR[v]?`var(${PFCOLOR[v]})`:"var(--ink-soft)";
+  return `<span class="pf" style="color:${col};background:color-mix(in srgb, ${col} 15%, transparent)">
+    <span class="pdot" style="background:${col}"></span>${v}</span>`;
+}
+function card(d){
+  const esp = d.esp.join(" · ");
+  const ext = d.ext[0].startsWith("Sem extrato")?"Sucos naturais":d.ext.join(" · ");
+  return `<article class="card${d.custom?" custom":""}">
+    <div class="card-top"><span class="origem${d.custom?" is-custom":""}">${d.o}</span><span class="metodo">${d.met}</span></div>
+    <h3>${d.n}</h3>
+    <div class="spec"><span class="lab">Base</span><span class="val">${d.des.join(", ")}</span></div>
+    <div class="spec"><span class="lab">Fruta real</span><span class="val">${d.fruNat&&d.fruNat.length?d.fruNat.join(", "):"—"}</span></div>
+    <div class="spec"><span class="lab">Espuma</span><span class="val soft">${esp}</span></div>
+    <div class="spec"><span class="lab">Extrato</span><span class="val soft">${ext}</span></div>
+    <div class="perfis">${d.pf.map(pfChip).join("")}${d.doceLevel&&d.doceLevel!=="Equilibrado"?`<span class="doce-badge">${d.doceLevel}</span>`:""}</div>
+    <details class="recipe">
+      <summary><svg class="arr" viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg> Ver receita</summary>
+      <div class="recipe-body">
+        ${d.desc?`<p style="color:var(--ink);font-style:italic;margin-bottom:6px">"${d.desc}"</p>`:""}
+        <div class="rh">Ingredientes</div>
+        <ul>${d.ing.map(i=>`<li>${i}</li>`).join("")}</ul>
+        <div class="rh">Preparo</div>
+        <p>${d.pre}</p>
+        ${d.copo?`<p class="copo">Servir em: ${d.copo}${d.clara?" · leva clara de ovo":""}</p>`:""}
+      </div>
+    </details>
+    ${d.custom?`<button class="rm-custom" data-rm="${encodeURIComponent(d.n)}">remover da carta</button>`:""}
+  </article>`;
+}
+
+/* ============ APPLY ============ */
+function apply(){
+  const list=D.filter(matches);
+  grid.innerHTML = list.length
+    ? list.map(card).join("")
+    : `<div class="empty"><div class="big">Nenhum drink com essa combinação</div>Afrouxe um filtro ou limpe a seleção para ver mais opções.</div>`;
+  document.getElementById("num").textContent=list.length;
+  const tot=document.getElementById("total"); if(tot) tot.textContent=D.length;
+  // chips ativos visual
+  document.querySelectorAll(".chip").forEach(b=>{
+    b.setAttribute("aria-pressed", state[b.dataset.key].has(b.dataset.val)?"true":"false");
+  });
+  // contador por grupo
+  FACETS.forEach(f=>{
+    const el=document.querySelector(`[data-g="${f.key}"]`);
+    if(el) el.textContent = state[f.key].size?`${state[f.key].size} ativo${state[f.key].size>1?"s":""}`:"";
+  });
+  renderActive();
+  return list;
+}
+
+/* ============ BARRA DE FILTROS ATIVOS ============ */
+function renderActive(){
+  const bar=document.getElementById("activebar");
+  const items=[];
+  FACETS.forEach(f=> state[f.key].forEach(v=> items.push({k:f.key,v})));
+  if(query) items.unshift({k:"__q",v:`"${query}"`});
+  if(!items.length){ bar.innerHTML=""; return; }
+  bar.innerHTML=`<span class="lab">Filtrando por</span>`+
+    items.map(it=>`<span class="actv">${it.v}<button data-k="${it.k}" data-v="${it.k==="__q"?"":it.v}" title="remover">×</button></span>`).join("");
+  bar.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    if(b.dataset.k==="__q"){ query=""; document.getElementById("q").value=""; }
+    else state[b.dataset.k].delete(b.dataset.v);
+    apply();
+  }));
+}
+
+/* ============ AÇÕES ============ */
+document.getElementById("q").addEventListener("input",e=>{ query=norm(e.target.value.trim()); apply(); });
+document.getElementById("clear").addEventListener("click",()=>{
+  FACETS.forEach(f=>state[f.key].clear()); query=""; document.getElementById("q").value=""; apply();
+});
+/* mobile drawer */
+const body=document.body;
+document.getElementById("filterToggle").addEventListener("click",()=>body.classList.add("filters-open"));
+document.getElementById("asideClose").addEventListener("click",()=>body.classList.remove("filters-open"));
+
+/* ============ CRIAÇÕES PRÓPRIAS (salvas no Gerador via localStorage) ============ */
+function loadCarta(){ try{return JSON.parse(localStorage.getItem("dm_carta"))||[]}catch(e){return []} }
+function saveCarta(c){ localStorage.setItem("dm_carta", JSON.stringify(c)); }
+let cartaSig="";
+function syncCustom(){
+  const raw=localStorage.getItem("dm_carta")||"[]";
+  if(raw===cartaSig) return;            // nada mudou desde a última sincronização
+  cartaSig=raw;
+  for(let i=D.length-1;i>=0;i--) if(D[i].custom) D.splice(i,1);
+  let arr=[]; try{arr=JSON.parse(raw)||[]}catch(e){}
+  arr.forEach(x=>{ x.custom=true; D.unshift(x); });
+  deriveFruits(); annotateSweet(); buildFilters(); apply();
+}
+// remover uma criação da carta
+grid.addEventListener("click",e=>{
+  const b=e.target.closest(".rm-custom"); if(!b) return;
+  const name=decodeURIComponent(b.dataset.rm);
+  saveCarta(loadCarta().filter(x=>x.n!==name));
+  syncCustom();
+});
+// ao voltar pra esta aba, puxa o que você salvou no Gerador
+window.addEventListener("focus", syncCustom);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) syncCustom(); });
+
+/* init */
+syncCustom();
+</script>
+<script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
+</body>
+</html>
