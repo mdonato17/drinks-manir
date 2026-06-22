@@ -47,6 +47,7 @@
 
   /* console */
   .console{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:24px 0 4px}
+  .ctrl-wide{grid-column:1 / -1}
   .ctrl{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:15px 15px 16px}
   .ctrl .clab{font-family:"Space Mono",monospace;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);display:block;margin-bottom:10px}
   select{width:100%;padding:11px 12px;background:var(--bg-2);border:1px solid var(--line);border-radius:10px;color:var(--ink);font-family:inherit;font-size:14.5px;cursor:pointer;appearance:none;
@@ -158,6 +159,10 @@
       <select id="selFlavor"></select>
     </div>
     <div class="ctrl">
+      <label class="clab" for="selFruNat">Fruta natural</label>
+      <select id="selFruNat"></select>
+    </div>
+    <div class="ctrl ctrl-wide">
       <span class="clab">Perfil do drink</span>
       <div class="pfchips" id="pfChips"></div>
     </div>
@@ -170,6 +175,10 @@
     <button class="adv-toggle" id="advToggle">+ opções avançadas</button>
   </div>
   <div class="advanced" id="advanced">
+    <div class="mini"><span class="clab">Espuma</span>
+      <select id="selEsp"></select></div>
+    <div class="mini"><span class="clab">Doçura</span>
+      <select id="selDoce"><option value="">Tanto faz</option><option>Equilibrado</option><option>Doce</option><option>Bem doce</option></select></div>
     <div class="mini"><span class="clab">Método</span>
       <select id="selMet"><option value="">Tanto faz</option><option>Batido</option><option>Montado</option><option>Liquidificador</option></select></div>
     <div class="mini"><span class="clab">Clara de ovo</span>
@@ -281,7 +290,25 @@ const FLAVOR_POOL = {
 /* ============================================================
    ESTADO + HELPERS
    ============================================================ */
-const sel = {base:"", flavor:"", perfil:"", met:"", clara:"", teor:""};
+const sel = {base:"", flavor:"", perfil:"", met:"", clara:"", teor:"", fruNat:"", esp:"", doce:""};
+const FRUNATS = ["Banana","Manga","Melão","Morango","Laranja","Maracujá","Abacaxi","Uva Verde","Maçã","Tangerina","Coco","Caju","Doce de Leite","Café"];
+// fruta natural -> ingrediente injetado (kw = palavra pra checar se já existe)
+const FRUNAT_ING = {
+  "Banana":{nm:"Bananinha (destilado de banana)",a:[20,30],kw:"banan"},
+  "Manga":{nm:"Licor cremoso de manga",a:[20,30],kw:"manga"},
+  "Melão":{nm:"suco de melão fresco",a:[40,60],kw:"melão"},
+  "Morango":{nm:"morango fresco macerado",fixed:"2 un",kw:"morango"},
+  "Laranja":{nm:"suco de laranja natural",a:[20,40],kw:"laranja"},
+  "Maracujá":{nm:"suco de maracujá sem açúcar",a:[15,20],kw:"maracuj"},
+  "Abacaxi":{nm:"suco de abacaxi natural",a:[30,50],kw:"abacaxi"},
+  "Uva Verde":{nm:"uvas verdes maceradas",fixed:"6–8 un",kw:"uva"},
+  "Maçã":{nm:"suco de maçã",a:[20,40],kw:"maçã"},
+  "Tangerina":{nm:"gomos de tangerina macerados",fixed:"2 un",kw:"tangerina"},
+  "Coco":{nm:"leite de coco",a:[30,50],kw:"coco"},
+  "Caju":{nm:"suco de caju",a:[30,40],kw:"caju"},
+  "Doce de Leite":{nm:"Licor de doce de leite Don Luiz",a:[20,30],kw:"doce de leite"},
+  "Café":{nm:"café espresso forte, frio",a:[20,30],kw:"café"}
+};
 const rnd = a => a[Math.floor(Math.random()*a.length)];
 const chance = p => Math.random() < p;
 const r5 = n => Math.round(n/5)*5;
@@ -305,7 +332,28 @@ function resolvePerfil(){
   if(sel.base){ cand = cand.filter(p => (BASE_POOL[p]||[]).includes(sel.base)); }
   if(sel.flavor){ const c2 = cand.filter(p => (FLAVOR_POOL[p]||[]).includes(sel.flavor)); if(c2.length) cand = c2; }
   if(!cand.length) cand = ["Sour","Cítrico","Tropical","Cremoso","Refrescante"];
+  // doçura desejada inclina o perfil
+  if(sel.doce==="Bem doce"){ const c=cand.filter(p=>["Cremoso","Doce","Tropical","Floral"].includes(p)); if(c.length) cand=c; }
+  else if(sel.doce==="Equilibrado"){ const c=cand.filter(p=>["Sour","Cítrico","Refrescante","Amargo"].includes(p)); if(c.length) cand=c; }
   return rnd(cand);
+}
+// injeta a fruta natural pedida, se ainda não estiver no drink
+function injectFruNat(ing){
+  if(!sel.fruNat) return;
+  const f=FRUNAT_ING[sel.fruNat]; if(!f) return;
+  if(ing.some(i=>i.nm.toLowerCase().includes(f.kw))) return;
+  const amt = f.fixed ? f.fixed : (between(f.a[0],f.a[1])+" ml");
+  const idx = ing.findIndex(i=>/^Espuma GS/.test(i.nm) || i.nm==="gelo");
+  const item = {amt, nm:f.nm};
+  if(idx>=0) ing.splice(idx,0,item); else ing.push(item);
+}
+// resolve a espuma final respeitando a escolha do usuário; retorna {foam, wantsFoam, clara}
+function resolveFoam(foamFams, perfil, clara){
+  if(sel.esp==="__sem") return {foam:pickFoam(foamFams), wantsFoam:false, clara};
+  if(sel.esp==="__clara") return {foam:pickFoam(foamFams), wantsFoam:false, clara:true};
+  if(sel.esp) return {foam:sel.esp, wantsFoam:true, clara};
+  const wantsFoam = !(perfil==="Doce" && chance(.5));
+  return {foam:pickFoam(foamFams), wantsFoam, clara};
 }
 function resolveBase(perfil){
   if(sel.base==="__none") return null;            // sem álcool
@@ -466,10 +514,14 @@ function build(perfil){
     foamFams.push("doce de leite");
   }
 
-  // espuma de acabamento (exceto quando claramente não cabe)
-  const foam = pickFoam(foamFams);
-  const wantsFoam = !(perfil==="Doce" && chance(.5));
-  if(wantsFoam) ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
+  // fruta natural pedida (injeta antes da espuma)
+  injectFruNat(ing);
+
+  // espuma de acabamento (respeitando a escolha do usuário)
+  const fr = resolveFoam(foamFams, perfil, clara);
+  const foam = fr.foam; clara = fr.clara;
+  if(clara && !ing.some(i=>i.nm==="clara de ovo")) ing.push({amt:"1 un", nm:"clara de ovo", note:"emulsão e espuma"});
+  if(fr.wantsFoam) ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
   ing.push({amt:"a gosto", nm:"gelo"});
 
   // método forçado pelo usuário
@@ -482,6 +534,11 @@ function build(perfil){
     const a = ing.find(i=>/limão/i.test(i.nm) && /ml$/.test(i.amt));
     if(a) a.amt = (parseInt(a.amt)+5)+" ml";
     balance = " Os preparados e licores GS já vêm adoçados — prove antes de servir e suba o limão se achar doce demais.";
+  }
+  // doçura desejada ajusta a acidez
+  if(sel.doce){
+    const a = ing.find(i=>/limão|suco de lim/i.test(i.nm) && /ml$/.test(i.amt));
+    if(a){ if(sel.doce==="Equilibrado") a.amt=(parseInt(a.amt)+5)+" ml"; else if(sel.doce==="Bem doce") a.amt=Math.max(10,parseInt(a.amt)-5)+" ml"; }
   }
 
   const garn = (flavor&&flavor.garn) || "rodela de limão";
@@ -502,8 +559,10 @@ function buildMocktail(perfil){
   if(f2 && f2!==f1) ing.push({amt:between(20,30)+" ml", nm:f2.n});
   ing.push({amt:between(10,15)+" ml", nm:ACID()});
   ing.push({amt:"completar", nm:rnd(["água com gás","água tônica","soda limão"])});
-  const foam = pickFoam(f1.fam);
-  ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
+  injectFruNat(ing);
+  const fr = resolveFoam(f1.fam, perfil, false);
+  const foam = fr.foam;
+  if(fr.wantsFoam) ing.push({amt:"finalizar", nm:"Espuma GS "+foam});
   ing.push({amt:"a gosto", nm:"gelo"});
   const name = makeName(f1, null, perfil)+" Zero";
   return {name, perfil, tags:perfilTags(perfil,f1,null), base:"Sem álcool (mocktail)", flavor:f1.n, method:"Montado", glass:"copo alto", foam, garn:f1.garn, ing, vibe:`Sem álcool e sem perder a graça — ${f1.w.toLowerCase()} com borbulha e final ${foam.toLowerCase()}.`, steps:makeSteps("Montado","copo alto",foam,f1.garn,false), color:f1.color, clara:false};
@@ -660,6 +719,17 @@ function buildSelects(){
   f.innerHTML = `<option value="">Tanto faz</option>`+
     FLAVORS.filter(x=>available(x.n)).map(x=>`<option value="${x.n}">${x.n}</option>`).join("");
   f.value = sel.flavor;
+  const fn=document.getElementById("selFruNat");
+  fn.innerHTML = `<option value="">Tanto faz</option>`+ FRUNATS.map(x=>`<option>${x}</option>`).join("");
+  fn.value = sel.fruNat;
+  const es=document.getElementById("selEsp");
+  es.innerHTML = `<option value="">Tanto faz</option>`+
+    FOAMS.filter(x=>available("Espuma "+x)).map(x=>`<option value="${x}">Espuma de ${x}</option>`).join("")+
+    `<option value="__clara">Só clara de ovo</option><option value="__sem">Sem espuma</option>`;
+  es.value = sel.esp;
+  document.getElementById("selDoce").value = sel.doce;
+  document.getElementById("selMet").value = sel.met;
+  document.getElementById("selClara").value = sel.clara;
 }
 function buildPfChips(){
   document.getElementById("pfChips").innerHTML = PERFIS.map(p=>{
@@ -676,6 +746,9 @@ function buildPfChips(){
 
 document.getElementById("selBase").addEventListener("change",e=>sel.base=e.target.value);
 document.getElementById("selFlavor").addEventListener("change",e=>sel.flavor=e.target.value);
+document.getElementById("selFruNat").addEventListener("change",e=>sel.fruNat=e.target.value);
+document.getElementById("selEsp").addEventListener("change",e=>sel.esp=e.target.value);
+document.getElementById("selDoce").addEventListener("change",e=>sel.doce=e.target.value);
 document.getElementById("selMet").addEventListener("change",e=>sel.met=e.target.value);
 document.getElementById("selClara").addEventListener("change",e=>sel.clara=e.target.value);
 document.getElementById("selTeor").addEventListener("change",e=>sel.teor=e.target.value);
@@ -688,9 +761,9 @@ document.getElementById("gen3").addEventListener("click",()=>{
   show(arr);
 });
 document.getElementById("surprise").addEventListener("click",()=>{
-  sel.base="";sel.flavor="";sel.perfil="";sel.met="";sel.clara="";sel.teor="";
+  sel.base="";sel.flavor="";sel.perfil="";sel.met="";sel.clara="";sel.teor="";sel.fruNat="";sel.esp="";sel.doce="";
   buildSelects(); document.querySelectorAll(".pfchip").forEach(x=>{x.setAttribute("aria-pressed","false");x.style.background="";});
-  document.getElementById("selMet").value="";document.getElementById("selClara").value="";document.getElementById("selTeor").value="";
+  document.getElementById("selTeor").value="";
   show([generate()]);
 });
 
@@ -716,8 +789,30 @@ document.getElementById("favGrid").addEventListener("click",e=>{
 let toastT;
 function toast(msg){ const t=document.getElementById("toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("show"),1800); }
 
+/* ============ CHEGOU DA CARTA? aplica os filtros e já cria ============ */
+function applyHandoff(){
+  let raw; try{ raw=new URLSearchParams(location.search).get("criar"); }catch(e){ return false; }
+  if(!raw) return false;
+  let o; try{ o=JSON.parse(raw); }catch(e){ return false; }
+  if(o.des){ const s=SPIRITS.find(x=>x.cat===o.des); sel.base = s?s.n : (o.des==="Sem álcool"?"__none":""); }
+  if(o.fruExt){ const f=FLAVORS.find(x=>x.fruit===o.fruExt && x.gs)||FLAVORS.find(x=>x.fruit===o.fruExt); if(f) sel.flavor=f.n; }
+  if(o.pf) sel.perfil=o.pf;
+  if(o.met) sel.met=o.met;
+  if(o.fruNat) sel.fruNat=o.fruNat;
+  if(o.doceLevel) sel.doce=o.doceLevel;
+  if(o.esp){ if(o.esp==="Clara de ovo") sel.esp="__clara"; else if(o.esp==="Sem espuma") sel.esp="__sem"; else sel.esp=o.esp.replace(/^Espuma de /,""); }
+  return true;
+}
+
 /* init */
+const fromCarta = applyHandoff();
 buildSelects(); buildPfChips(); renderFavs(); renderInv();
+if(fromCarta){
+  if(sel.perfil){ const ch=[...document.querySelectorAll(".pfchip")].find(c=>c.dataset.pf===sel.perfil); if(ch){ ch.setAttribute("aria-pressed","true"); ch.style.background=`var(${PFCOLOR[sel.perfil]})`; } }
+  document.getElementById("advanced").classList.add("show");
+  show([generate()]);
+  toast("Drink criado a partir dos seus filtros");
+}
 </script>
 <script>if("serviceWorker"in navigator){addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}</script>
 </body>

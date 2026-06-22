@@ -222,6 +222,9 @@
   .activebar .lab{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
   .actv{font-size:12px;padding:5px 10px 5px 12px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);display:inline-flex;align-items:center;gap:8px}
   .actv button{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:15px;line-height:1;padding:0}
+  .actv-create{font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:6px 13px;border-radius:999px;border:1px solid var(--gold-deep);background:color-mix(in srgb, var(--gold) 14%, transparent);color:var(--gold);margin-left:6px}
+  .actv-create:hover{background:var(--gold);color:#231a0f}
+  .empty-cta{margin-top:22px}
   .actv button:hover{color:var(--p-apimentado)}
 
   @media(max-width:880px){
@@ -545,12 +548,22 @@ function card(d){
   </article>`;
 }
 
+/* ============ PONTE PARA O GERADOR ============ */
+function hasActiveFilters(){ return FACETS.some(f=>state[f.key].size>0); }
+function activeFilterObj(){
+  const o={};
+  ["des","pf","fruNat","fruExt","doceLevel","esp","met"].forEach(k=>{ const s=state[k]; if(s&&s.size) o[k]=[...s][0]; });
+  return o;
+}
+function goCreate(){ location.href = "gerador.html?criar=" + encodeURIComponent(JSON.stringify(activeFilterObj())); }
+
 /* ============ APPLY ============ */
 function apply(){
   const list=D.filter(matches);
   grid.innerHTML = list.length
     ? list.map(card).join("")
-    : `<div class="empty"><div class="big">Nenhum drink com essa combinação</div>Afrouxe um filtro ou limpe a seleção para ver mais opções.</div>`;
+    : `<div class="empty"><div class="big">Nenhum drink com essa combinação</div>${hasActiveFilters()?`Não tem na carta — mas dá pra <b>inventar um do zero</b> com esses mesmos filtros.<div class="empty-cta"><button class="tbtn accent gen-cta" id="createFromFilters"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h14l-7 9z"/><path d="M12 13v7"/><path d="M8 20h8"/></svg> Criar um drink com esses filtros</button></div>`:`Afrouxe um filtro ou limpe a seleção para ver mais opções.`}</div>`;
+  const cf=document.getElementById("createFromFilters"); if(cf) cf.addEventListener("click", goCreate);
   document.getElementById("num").textContent=list.length;
   const tot=document.getElementById("total"); if(tot) tot.textContent=D.length;
   // chips ativos visual
@@ -574,12 +587,14 @@ function renderActive(){
   if(query) items.unshift({k:"__q",v:`"${query}"`});
   if(!items.length){ bar.innerHTML=""; return; }
   bar.innerHTML=`<span class="lab">Filtrando por</span>`+
-    items.map(it=>`<span class="actv">${it.v}<button data-k="${it.k}" data-v="${it.k==="__q"?"":it.v}" title="remover">×</button></span>`).join("");
-  bar.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{
+    items.map(it=>`<span class="actv">${it.v}<button data-k="${it.k}" data-v="${it.k==="__q"?"":it.v}" title="remover">×</button></span>`).join("")+
+    (hasActiveFilters()?`<button class="actv-create" id="barCreate">＋ Criar um drink assim</button>`:"");
+  bar.querySelectorAll("button[data-k]").forEach(b=>b.addEventListener("click",()=>{
     if(b.dataset.k==="__q"){ query=""; document.getElementById("q").value=""; }
     else state[b.dataset.k].delete(b.dataset.v);
     apply();
   }));
+  const bc=document.getElementById("barCreate"); if(bc) bc.addEventListener("click", goCreate);
 }
 
 /* ============ AÇÕES ============ */
